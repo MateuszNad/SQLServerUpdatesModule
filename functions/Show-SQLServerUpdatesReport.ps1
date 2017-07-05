@@ -331,7 +331,7 @@ function Show-SQLServerUpdatesReport
                             </style>"
         $MessageBody += $StyleCSS
 
-        $PostContent = "Author <a href='https://mnadobnik.pl/SQLServerUpdatesModule' target='_blank'>SQLServerUpdatesModule</a> - Mateusz Nadobnik</br>
+        $PostContent = "Author <a href='http://mnadobnik.pl/SQLServerUpdatesModule' target='_blank'>SQLServerUpdatesModule</a> - Mateusz Nadobnik</br>
                         Information about updates getting with site <a href='https://sqlserverupdates.com' target='_blank'>https://sqlserverupdates.com</a>"
 
         if($HTML)

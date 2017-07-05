@@ -11,7 +11,7 @@
 	RootModule = 'SQLServerUpdatesModule.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '1.0.0.2'
+	ModuleVersion = '1.0.0.3'
 	
 	# ID used to uniquely identify this module
 	GUID = '9fde4b8f-637b-4a3a-ac62-5235c875dc30'
@@ -101,7 +101,7 @@
         IconUri = "http://mnadobnik.pl/logo.png"
 
         # The web address of this module's project or support homepage.
-        ProjectUri = "http://mnadobnik.pl"
+        ProjectUri = "http://mnadobnik.pl/SQLServerUpdatesModule/"
 
         # The web address of this module's license. Points to a page that's embeddable and linkable.
         LicenseUri = ""

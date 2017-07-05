@@ -110,6 +110,9 @@ function Get-SQLServerUpdates
                     $object.Build = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)",""); $i++
                     $object.SupportEnds = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)","")
                     $ObjReturn +=$object
+
+                    #$linkRegex = '"[^"]*"'
+                    #([regex]::Matches($ObjReturn[5].CumulativeUpdate,$linkRegex)[0].Value).Replace('"','')
                 }
             }
         }
