@@ -1,4 +1,21 @@
-﻿# Shared function for module
+﻿<#
+.Synopsis
+   Connect to SQL Server
+.DESCRIPTION
+   Function can connect to SQL server with authetication Windows
+.EXAMPLE
+   Example of how to use this cmdlet
+.EXAMPLE
+   Another example of how to use this cmdlet
+.LINK
+   Author: Mateusz Nadobnik 
+   Link: mnadobnik.pl
+   Date: 16.07.2017
+   Version: 1.0.0.4
+    
+   Keywords: Shared function, Version, SQL Server
+   Notes: 1.0.0.4 - Without change.
+#>
 
 Function Get-SQLServerFullName($param)
 {
@@ -13,16 +30,6 @@ Function Get-SQLServerFullName($param)
     }
 }
 
-<#
-.Synopsis
-   Connect to SQL Server
-.DESCRIPTION
-   Function can connect to SQL server with authetication Windows
-.EXAMPLE
-   Example of how to use this cmdlet
-.EXAMPLE
-   Another example of how to use this cmdlet
-#>
 function Get-SQLServerVersion
 {
     [CmdletBinding()]

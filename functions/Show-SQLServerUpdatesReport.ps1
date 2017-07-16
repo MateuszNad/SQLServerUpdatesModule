@@ -90,6 +90,15 @@ function Show-SQLServerUpdatesReport
     Show-SQLServerUpdatesReport -ServerInstance it-mn-m\mssqlserver14, test-agsqlserver -HTML -Path C:\temp\report.html
 
     Return information about deficit of installed updates for instances with parameter ServerInstance. This command returns report in the format html.
+
+.LINK
+   Author: Mateusz Nadobnik 
+   Link: mnadobnik.pl
+   Date: 16.07.2017
+   Version: 1.0.0.4
+    
+   Keywords: SQL Server, Updates, Get, Reports, Show
+   Notes: 1.0.0.4 - Without change.
 #>
 
     [CmdletBinding()]

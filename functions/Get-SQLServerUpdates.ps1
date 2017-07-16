@@ -32,6 +32,15 @@ function Get-SQLServerUpdates
    Get-SQLServerUpdateList -Version 2012
 
    Update list only for SQL Server 2012
+
+.LINK
+   Author: Mateusz Nadobnik 
+   Link: mnadobnik.pl
+   Date: 16.07.2017
+   Version: 1.0.0.4
+    
+   Keywords: SQL Server, Updates, Get
+   Notes: 1.0.0.4 - Added new object (Link) with links without marks HTML.
 #>
     [CmdletBinding()]
     [Alias()]
@@ -44,6 +53,7 @@ function Get-SQLServerUpdates
 
     Begin
     {
+        $linkRegex = '"[^"]*"'
         $ObjReturn = @()
         try
         {
@@ -102,11 +112,28 @@ function Get-SQLServerUpdates
 
                 for ($i = 5; $i -lt $updateslistTD.Count; $i++)
                 { 
-                    $object = @{} | Select Name, ServicePack, CumulativeUpdate, ReleaseDate, Build, SupportEnds
+                    $object = @{} | Select Name, ServicePack, CumulativeUpdate, ReleaseDate, Link, Build, SupportEnds
                     $object.Name = ($update.innerText).Replace(" Updates","")
                     $object.ServicePack = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)",""); $i++
                     $object.CumulativeUpdate =  (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)",""); $i++
                     $object.ReleaseDate = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)",""); $i++
+
+                    try {
+
+                        if([regex]::Matches($object.CumulativeUpdate,$linkRegex)-ne "")
+                        {
+                            $object.Link = ([regex]::Matches($object.CumulativeUpdate,$linkRegex)[0].Value).Replace('"','')
+                        }
+                        elseif([regex]::Matches($object.ServicePack,$linkRegex)-ne "")
+                        {
+                            $object.Link = ([regex]::Matches($object.ServicePack,$linkRegex)[0].Value).Replace('"','')
+                        }
+                    }
+                    catch
+                    {
+                        $object.Link = $null
+                    }
+
                     $object.Build = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)",""); $i++
                     $object.SupportEnds = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)","")
                     $ObjReturn +=$object
@@ -144,10 +171,28 @@ function Get-SQLServerUpdates
 
                 for ($i = 4; $i -lt $updateslistTD.Count; $i++)
                 { 
-                    $object = @{} | Select Name, ServicePack, CumulativeUpdate, ReleaseDate, Build, SupportEnds
+                    $object = @{} | Select Name, ServicePack, CumulativeUpdate, Link, ReleaseDate, Build, SupportEnds
                     $object.Name = ($update.innerText).Replace(" Updates","")
                     $object.ServicePack = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)",""); $i++
                     $object.CumulativeUpdate =  $null;
+
+                    try {
+
+                        $linkRegex = '"[^"]*"'
+                        if([regex]::Matches($object.CumulativeUpdate,$linkRegex)-ne "")
+                        {
+                            $object.Link = ([regex]::Matches($object.CumulativeUpdate,$linkRegex)[0].Value).Replace('"','')
+                        }
+                        elseif([regex]::Matches($object.ServicePack,$linkRegex)-ne "")
+                        {
+                            $object.Link = ([regex]::Matches($object.ServicePack,$linkRegex)[0].Value).Replace('"','')
+                        }
+                    }
+                    catch
+                    {
+                        $object.Link = $null
+                    }
+
                     $object.ReleaseDate = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)",""); $i++
                     $object.Build = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)",""); $i++
                     $object.SupportEnds = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)","")
@@ -156,7 +201,6 @@ function Get-SQLServerUpdates
             }  
         }
     }
-
     End
     {
     # Return Updates

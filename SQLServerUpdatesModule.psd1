@@ -5,13 +5,24 @@
 #
 # Generated on: 20/6/2017
 #
+<#
+.LINK
+   Author: Mateusz Nadobnik 
+   Link: mnadobnik.pl
+   Date: 16.07.2017
+   Version: 1.0.0.4
+    
+   Keywords: SQL Server, Updates, Get
+   Notes: 1.0.0.4 - Get-SQLServerUpdates. Added new object (Link) with links without marks HTML.
+#>
+
 @{
 	
 	# Script module or binary module file associated with this manifest.
 	RootModule = 'SQLServerUpdatesModule.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '1.0.0.3'
+	ModuleVersion = '1.0.0.4'
 	
 	# ID used to uniquely identify this module
 	GUID = '9fde4b8f-637b-4a3a-ac62-5235c875dc30'
