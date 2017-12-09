@@ -37,10 +37,11 @@ function Get-SQLServerUpdates
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
    Date: 16.07.2017
-   Version: 1.0.0.4
+   Version: 1.0.0.5
     
    Keywords: SQL Server, Updates, Get
    Notes: 1.0.0.4 - Added new object (Link) with links without marks HTML.
+          1.0.0.5 - Repaired error with TLS 1.2 and added SQL Server 2017
 #>
     [CmdletBinding()]
     [Alias()]
@@ -48,7 +49,7 @@ function Get-SQLServerUpdates
     Param
     (
         #Version SQL Sever 
-        [ValidateSet('SQL Server 2008','SQL Server 2008 R2','SQL Server 2012','SQL Server 2014','SQL Server 2016')]$Version
+        [ValidateSet('SQL Server 2008','SQL Server 2008 R2','SQL Server 2012','SQL Server 2014','SQL Server 2016','SQL Server 2017')]$Version
     )
 
     Begin
@@ -57,6 +58,8 @@ function Get-SQLServerUpdates
         $ObjReturn = @()
         try
         {
+            #Enable TLS 1.2 
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
             $content = Invoke-WebRequest -Uri http://sqlserverupdates.com/
         }
         catch 
@@ -73,6 +76,7 @@ function Get-SQLServerUpdates
             'SQL Server 2012'    {$updatesafter = $content.Links | Where-Object InnerHTML -like "SQL*2012*"}
             'SQL Server 2014'    {$updatesafter = $content.Links | Where-Object InnerHTML -like "SQL*2014*"}
             'SQL Server 2016'    {$updatesafter = $content.Links | Where-Object InnerHTML -like "SQL*2016*"}
+            'SQL Server 2017'    {$updatesafter = $content.Links | Where-Object InnerHTML -like "SQL*2017*"}
             Default 
             {
                 # After SQL Server 2012
