@@ -110,7 +110,7 @@
         Category = "Databases"
 
         # Keyword tags to help users find this module via navigations and search.
-        Tags = @('updates','update','service pack','sqlserver','sql','dba','database','databases','instance','reports')
+        Tags = @('updates','update','sqlserver','sql','dba','database','databases','instance','reports')
 
         # The web address of an icon which can be used in galleries to represent this module
         IconUri = "http://mnadobnik.pl/logo.png"
