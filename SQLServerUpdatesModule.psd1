@@ -9,11 +9,12 @@
 .LINK
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
-   Date: 16.07.2017
-   Version: 1.0.0.4
+   Date: 09.12.2017
+   Version: 1.0.0.5
     
    Keywords: SQL Server, Updates, Get
    Notes: 1.0.0.4 - Get-SQLServerUpdates. Added new object (Link) with links without marks HTML.
+		  1.0.0.5 - Repaired error with TLS 1.2 and added SQL Server 2017
 #>
 
 @{

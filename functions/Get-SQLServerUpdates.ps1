@@ -36,7 +36,7 @@ function Get-SQLServerUpdates
 .LINK
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
-   Date: 16.07.2017
+   Date: 09.12.2017
    Version: 1.0.0.5
     
    Keywords: SQL Server, Updates, Get
