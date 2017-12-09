@@ -23,7 +23,7 @@
 	RootModule = 'SQLServerUpdatesModule.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '1.0.0.4'
+	ModuleVersion = '1.0.0.5'
 	
 	# ID used to uniquely identify this module
 	GUID = '9fde4b8f-637b-4a3a-ac62-5235c875dc30'
@@ -61,8 +61,11 @@
 	# Modules that must be imported into the global environment prior to importing this module
 	RequiredModules = @()
 	
-	# Assemblies that must be loaded prior to importing this module
-	RequiredAssemblies = @('Microsoft.SqlServer.Smo', 'Microsoft.SqlServer.SmoExtended')
+	<# Assemblies that must be loaded prior to importing this module
+    In a recent version of PowerShell, Publish-Module, which publishes modules to the Gallery began requiring fully
+    qualified Assembly names such as “Microsoft.SqlServer.Smo, Version=$smoversion, Culture=neutral, PublicKeyToken=89845dcd8080cc91”.
+    https://blog.netnerds.net/2016/12/loading-smo-in-your-sql-server-centric-powershell-modules/
+	RequiredAssemblies = @('Microsoft.SqlServer.Smo', 'Microsoft.SqlServer.SmoExtended')#>
 	
 	# Script files () that are run in the caller's environment prior to importing this module
 	ScriptsToProcess = @()
@@ -107,7 +110,7 @@
         Category = "Databases"
 
         # Keyword tags to help users find this module via navigations and search.
-        Tags = @('updates','sqlserver','sql','dba','database','databases','instance','reports')
+        Tags = @('updates','update','service pack','sqlserver','sql','dba','database','databases','instance','reports')
 
         # The web address of an icon which can be used in galleries to represent this module
         IconUri = "http://mnadobnik.pl/logo.png"
