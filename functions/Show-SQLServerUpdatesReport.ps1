@@ -94,7 +94,7 @@ function Show-SQLServerUpdatesReport {
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
    Date: 16.07.2017
-   Version: 1.0.0.4
+   Version: 1.0.0.6
     
    Keywords: SQL Server, Updates, Get, Reports, Show
    Notes: 1.0.0.4 - Without change.
@@ -140,6 +140,8 @@ function Show-SQLServerUpdatesReport {
 
     Begin {
 
+        [array]$ObjAllSserversWithUpdates = @()
+
         if ($BuildNumber) {
             $ServerInstance = @{} | Select-Object VersionMajor, Build, VersionName
             $ServerInstance.Build = $BuildNumber
@@ -172,9 +174,8 @@ function Show-SQLServerUpdatesReport {
         foreach ($SqlInstance in $ServerInstance) {
 
             #Clear variables
-            [array]$ObjAllSserversWithUpdates = @()
-            [array]$ObjServer = @()
-            [array]$ObjUpdates = @()
+            $ObjServer = @()
+            $ObjUpdates = @()
 
             if (-not $BuildNumber) {   
                 $Instance = Get-SQLServerVersion -ServerInstance $SqlInstance
