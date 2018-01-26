@@ -15,12 +15,11 @@
     
    Keywords: Shared function, Version, SQL Server
    Notes: 1.0.0.4 - Without change.
+          1.0.0.6 - Repaired syntax
 #>
 
-Function Get-SQLServerFullName($param)
-{
-    switch ($param)
-    {
+Function Get-SQLServerFullName($param) {
+    switch ($param) {
         9 { return "SQL Server 2005"}
         10 { return "SQL Server 2008"}
         10.50 { return "SQL Server 2008 R2"}
@@ -30,57 +29,47 @@ Function Get-SQLServerFullName($param)
     }
 }
 
-function Get-SQLServerVersion
-{
+function Get-SQLServerVersion {
     [CmdletBinding()]
     Param
     (
         # Param1 help description
-        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]$ServerInstance
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]$ServerInstance
     )
 
     Begin
     { }
 
-    Process
-    {
-        try
-        { 
+    Process {
+        try { 
             $connectsqlserver = New-Object Microsoft.SqlServer.Management.Smo.Server $ServerInstance
             $connectsqlserver.ConnectionContext.ApplicationName = "DBA PowerShell App"
             $connectsqlserver.ConnectionContext.ConnectTimeout = 1
 
             Write-Verbose "Connect to server $ServerInstance"
-       		if ($connectsqlserver.ConnectionContext.IsOpen -eq $false) {
+            if ($connectsqlserver.ConnectionContext.IsOpen -eq $false) {
 
                 $connectsqlserver.ConnectionContext.Connect()
             }
         }
-        catch 
-        {
+        catch {
             Write-Host $_.Exception.Message -ForegroundColor Yellow               
         }
-        finally
-        { 
-            $connectsqlserver | Select Name, Product, Edition, ProductLevel, VersionMajor, @{L="VersionName";E={Get-SQLServerFullName $_.versionmajor}}, @{L="Build";E={$_.VersionString}} 
+        finally { 
+            $connectsqlserver | Select-Object Name, Product, Edition, ProductLevel, VersionMajor, @{L = "VersionName"; E = {Get-SQLServerFullName $_.versionmajor}}, @{L = "Build"; E = {$_.VersionString}} 
         }
     }
-    End
-    {        
+    End {        
         Write-Verbose "Disconnect all connection"
-        try
-        {
-            if ($connectsqlserver.ConnectionContext.IsOpen -eq $true)
-            {
+        try {
+            if ($connectsqlserver.ConnectionContext.IsOpen -eq $true) {
                 $connectsqlserver.ConnectionContext.Disconnect()
             }
-            else
-            {
+            else {
                 
             }
         }
-        catch
-        {
+        catch {
             Write-Host $_.Exception.Message -ForegroundColor Yellow         
         }
     }

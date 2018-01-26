@@ -15,7 +15,7 @@ foreach ($function in (Get-ChildItem "$PSScriptRoot\functions\*.ps1")) { . $func
 
 <# In order to keep backwards compatability, these are loaded here instead of in the manifest.
 In a recent version of PowerShell, Publish-Module, which publishes modules to the Gallery began requiring fully
-qualified Assembly names such as “Microsoft.SqlServer.Smo, Version=$smoversion, Culture=neutral, PublicKeyToken=89845dcd8080cc91”.
+qualified Assembly names such as ï¿½Microsoft.SqlServer.Smo, Version=$smoversion, Culture=neutral, PublicKeyToken=89845dcd8080cc91ï¿½.
 https://blog.netnerds.net/2016/12/loading-smo-in-your-sql-server-centric-powershell-modules/
 
 $assemblylist =  
@@ -51,15 +51,12 @@ foreach ($assembly in $assemblylist)
 #https://blog.netnerds.net/2016/12/loading-smo-in-your-sql-server-centric-powershell-modules/
 $smoversions = "14.0.0.0", "13.0.0.0", "12.0.0.0", "11.0.0.0", "10.0.0.0", "9.0.242.0", "9.0.0.0"
  
-foreach ($smoversion in $smoversions)
-{
-    try
-    {
+foreach ($smoversion in $smoversions) {
+    try {
         Add-Type -AssemblyName "Microsoft.SqlServer.Smo, Version=$smoversion, Culture=neutral, PublicKeyToken=89845dcd8080cc91" -ErrorAction Stop
         $smoadded = $true
     }
-    catch
-    {
+    catch {
         $smoadded = $false
     }
     
@@ -72,14 +69,11 @@ $assemblies = "Management.Common", "Dmf", "Instapi", "SqlWmiManagement", "Connec
 "SString", "Management.RegisteredServers", "Management.Sdk.Sfc", "SqlEnum", "RegSvrEnum", "WmiEnum", "ServiceBrokerEnum", "Management.XEvent",
 "ConnectionInfoExtended", "Management.Collector", "Management.CollectorEnum", "Management.Dac", "Management.DacEnum", "Management.IntegrationServices"
  
-foreach ($assembly in $assemblies)
-{
-    try
-    {
+foreach ($assembly in $assemblies) {
+    try {
         Add-Type -AssemblyName "Microsoft.SqlServer.$assembly, Version=$smoversion, Culture=neutral, PublicKeyToken=89845dcd8080cc91" -ErrorAction Stop
     }
-    catch
-    {
+    catch {
         # Don't care
     }
 }
