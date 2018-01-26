@@ -11,7 +11,7 @@
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
    Date: 16.07.2017
-   Version: 1.0.0.4
+   Version: 1.0.0.6
     
    Keywords: Shared function, Version, SQL Server
    Notes: 1.0.0.4 - Without change.

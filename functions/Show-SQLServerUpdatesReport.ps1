@@ -139,7 +139,6 @@ function Show-SQLServerUpdatesReport {
     }
 
     Begin {
-
         [array]$ObjAllSserversWithUpdates = @()
 
         if ($BuildNumber) {
