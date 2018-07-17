@@ -109,15 +109,22 @@ function Show-SQLServerUpdatesReport {
     Param
     (
         #The SQL Server instance
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ParameterSetName = 'Instance')]$ServerInstance,
+        [Parameter(Mandatory = $true,
+                   ValueFromPipeline = $true,
+                   Position = 0,
+                   ParameterSetName = 'Instance')]
+                   $ServerInstance,
         #Build number SQL Server, example 13.0.4422.0
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ParameterSetName = 'Version')]
-        [string]$BuildNumber,
+        [Parameter(Mandatory = $true,
+                   ValueFromPipeline = $true, 
+                   Position = 0, 
+                   ParameterSetName = 'Version')]
+                    [string]$BuildNumber,
         #Return report HTML
         [switch]$HTML
     )
     DynamicParam {
-        if ($HTML) {
+        if($HTML) {
             #create a new ParameterAttribute Object
             $pathAttribute = New-Object System.Management.Automation.ParameterAttribute
             $pathAttribute.Mandatory = $true
@@ -137,10 +144,25 @@ function Show-SQLServerUpdatesReport {
             return $paramDictionary
         }
     }
-
     Begin {
         [array]$ObjAllSserversWithUpdates = @()
 
+        if($HTML)
+        {
+            #Check path
+            if($PSBoundParameters.Path  -notmatch '[.]html')
+            {
+                Write-Host "The path $($PSBoundParameters.Path) not contain file with extension html"
+                break
+            }
+
+            if(-not (Test-Path (Split-Path -Path $PSBoundParameters.Path)))
+            {
+                Write-Host "Not correct path. The directory $(Split-Path -Path $PSBoundParameters.Path) not exist."
+                break
+            }
+        }
+        
         if ($BuildNumber) {
             $ServerInstance = @{} | Select-Object VersionMajor, Build, VersionName
             $ServerInstance.Build = $BuildNumber
@@ -154,7 +176,7 @@ function Show-SQLServerUpdatesReport {
             }
             catch {
                 Write-Host $_.Exception.Message
-                return
+                exit 1
             }
         }
         else {
@@ -164,7 +186,7 @@ function Show-SQLServerUpdatesReport {
             }
             catch {
                 Write-Warning $_.Exception.Message
-                return
+                exit 1
             }
         }
     }
@@ -318,7 +340,66 @@ function Show-SQLServerUpdatesReport {
                                  text-decoration:underline;
                                  color:#FF0000;
                             }
-                            </style>"
+                            body 
+                            {
+                                font-family:Calibri;
+                                font-size:12pt;
+                                background: #fafafa;
+                                color: #5a5a5a;
+                            } 
+                            h1
+                            {
+                                font-size: 38px;
+                                line-height: 48px;
+                                font-weight: 100;
+                            }
+                            td.toupdate 
+                            {
+                                color:#e10707;
+                                font-weight: 700;
+                            }
+                            tr:nth-child(odd) td, tr:nth-child(odd) th 
+                            {
+                                background-color: #f8f8f8;
+                            }
+                            td 
+                            {
+                                padding: 8px;
+                                line-height: 18px;
+                                text-align: center;
+                                vertical-align: top;
+                                border-top: 1px solid #dddddd;
+                            }
+                            table td 
+                            {
+                                padding: 8px;
+                                line-height: 18px;
+                                text-align: center;
+                                vertical-align: top;
+                                border-top: 1px solid #dddddd;
+                            }
+
+                            table 
+                            {
+                                border-bottom: 5px solid rgba(225,7,7,.5);
+                                border-collapse: collapse;
+                                border-spacing: 0;
+                                font-size: 14px;
+                                line-height: 2;
+                                margin: 0 0 20px;
+                                width: 100%;
+                            }
+                            a 
+                            {
+                                color: #e10707;
+                                text-decoration:none;
+                            }
+                            a:hover
+                            {
+                                    text-decoration:underline;
+                                    color:#FF0000;
+                            }
+                                                        </style>"
         $MessageBody += $StyleCSS
 
         $PostContent = "Author <a href='http://mnadobnik.pl/SQLServerUpdatesModule' target='_blank'>SQLServerUpdatesModule</a> - Mateusz Nadobnik</br>

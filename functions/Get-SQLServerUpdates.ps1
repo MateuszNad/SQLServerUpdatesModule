@@ -41,6 +41,8 @@ function Get-SQLServerUpdates {
    Keywords: SQL Server, Updates, Get
    Notes: 1.0.0.4 - Added new object (Link) with links without marks HTML.
           1.0.0.5 - Repaired error with TLS 1.2 and added SQL Server 2017
+          1.0.0.7 - Repaired error Cannot index into a null array.
+
 #>
     [CmdletBinding()]
     [Alias()]
@@ -48,7 +50,12 @@ function Get-SQLServerUpdates {
     Param
     (
         #Version SQL Sever 
-        [ValidateSet('SQL Server 2008', 'SQL Server 2008 R2', 'SQL Server 2012', 'SQL Server 2014', 'SQL Server 2016', 'SQL Server 2017')]$Version
+        [ValidateSet('SQL Server 2008', 
+                     'SQL Server 2008 R2', 
+                     'SQL Server 2012', 
+                     'SQL Server 2014', 
+                     'SQL Server 2016', 
+                     'SQL Server 2017')]$Version
     )
 
     Begin {
@@ -66,17 +73,18 @@ function Get-SQLServerUpdates {
         }
         
         switch ($Version) {
-            'SQL Server 2008' {$updatesbefore = $content.Links | Where-Object InnerHTML -like "SQL*2008?U*"}
-            'SQL Server 2008 R2' {$updatesbefore = $content.Links | Where-Object InnerHTML -like "SQL*2008?R2*"}
-            'SQL Server 2012' {$updatesafter = $content.Links | Where-Object InnerHTML -like "SQL*2012*"}
-            'SQL Server 2014' {$updatesafter = $content.Links | Where-Object InnerHTML -like "SQL*2014*"}
-            'SQL Server 2016' {$updatesafter = $content.Links | Where-Object InnerHTML -like "SQL*2016*"}
-            'SQL Server 2017' {$updatesafter = $content.Links | Where-Object InnerHTML -like "SQL*2017*"}
+            'SQL Server 2008'    {$updatesbefore = $content.Links | Where-Object InnerText -like "*SQL*2008?U*"}
+            'SQL Server 2008 R2' {$updatesbefore = $content.Links | Where-Object InnerText -like "*SQL*2008?R2*"}
+            'SQL Server 2012'    {$updatesafter = $content.Links | Where-Object InnerText -like "*SQL*2012*"}
+            'SQL Server 2014'    {$updatesafter = $content.Links | Where-Object InnerText -like "*SQL*2014*"}
+            'SQL Server 2016'    {$updatesafter = $content.Links | Where-Object InnerText -like "SQL*2016*"}
+            'SQL Server 2017'    {$updatesafter = $content.Links | Where-Object InnerText -like "SQL*2017*"}
             Default {
                 # After SQL Server 2012
-                $updatesafter = $content.Links | Where-Object InnerHTML -like "SQL*2[0-9][1-9][0-9]*"
+                $updatesafter = $content.Links | Where-Object InnerText -like "SQL*2[0-9][1-9][0-9]*"
+
                 # Before SQL Server 2012
-                $updatesbefore = $content.Links| Where-Object InnerHTML -like "SQL*2[0-9][0-9]8*"
+                $updatesbefore = $content.Links| Where-Object InnerText -like "SQL*2[0-9][0-9]8*"
             }
         }
     }
