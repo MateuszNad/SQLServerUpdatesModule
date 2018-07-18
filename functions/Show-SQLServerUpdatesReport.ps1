@@ -100,6 +100,7 @@ function Show-SQLServerUpdatesReport {
    Notes: 1.0.0.4 - Without change.
           1.0.0.6 - issue repaired - HTML Report Has Duplicates the previous Servers available builds
                     Repaired syntax and change changed name variables "$object" to $ObjAllSserversWithUpdates
+          1.0.0.8 - fixed problem with parameters in a pipeline
 
 #>
 
@@ -110,21 +111,21 @@ function Show-SQLServerUpdatesReport {
     (
         #The SQL Server instance
         [Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true,
-                   Position = 0,
-                   ParameterSetName = 'Instance')]
-                   $ServerInstance,
+            ValueFromPipeline = $true,
+            Position = 0,
+            ParameterSetName = 'Instance')]
+        $ServerInstance,
         #Build number SQL Server, example 13.0.4422.0
         [Parameter(Mandatory = $true,
-                   ValueFromPipeline = $true, 
-                   Position = 0, 
-                   ParameterSetName = 'Version')]
-                    [string]$BuildNumber,
+            ValueFromPipelineByPropertyName = $true, 
+            Position = 1, 
+            ParameterSetName = 'Version')]
+        [string]$BuildNumber,
         #Return report HTML
         [switch]$HTML
     )
     DynamicParam {
-        if($HTML) {
+        if ($HTML) {
             #create a new ParameterAttribute Object
             $pathAttribute = New-Object System.Management.Automation.ParameterAttribute
             $pathAttribute.Mandatory = $true
@@ -147,17 +148,14 @@ function Show-SQLServerUpdatesReport {
     Begin {
         [array]$ObjAllSserversWithUpdates = @()
 
-        if($HTML)
-        {
+        if ($HTML) {
             #Check path
-            if($PSBoundParameters.Path  -notmatch '[.]html')
-            {
+            if ($PSBoundParameters.Path -notmatch '[.]html') {
                 Write-Host "The path $($PSBoundParameters.Path) not contain file with extension html"
                 break
             }
 
-            if(-not (Test-Path (Split-Path -Path $PSBoundParameters.Path)))
-            {
+            if (-not (Test-Path (Split-Path -Path $PSBoundParameters.Path))) {
                 Write-Host "Not correct path. The directory $(Split-Path -Path $PSBoundParameters.Path) not exist."
                 break
             }
@@ -219,7 +217,7 @@ function Show-SQLServerUpdatesReport {
 
             # If check updates for SQL Server 2005
             if ($Instance.VersionMajor -eq 9) {
-                $ObjUpdate = @{} | Select+Object CumulativeUpdate, ReleaseDate, Build, SupportEnds, ServicePack
+                $ObjUpdate = @{} | Select-Object CumulativeUpdate, ReleaseDate, Build, SupportEnds, ServicePack
 
                 $ObjUpdate.CumulativeUpdate = ""
                 $ObjUpdate.ReleaseDate = "2012/10/09"
@@ -406,8 +404,8 @@ function Show-SQLServerUpdatesReport {
                         Information about updates getting with site <a href='https://sqlserverupdates.com' target='_blank'>https://sqlserverupdates.com</a>"
         #Prepare HTML
         if ($HTML) {
-            $MessageBody += "<h1>Updates Report - ($($ServerInstance -join ','))</h1></br></br>"
-            $MessageBody += (((($ObjAllSserversWithUpdates | Select ToUpdate, @{L = "Name"; E = {($_.Name).ToUpper()}}, Product, VersionName, Edition, ProductLevel, `
+            $MessageBody += "<h1>Updates Report - ($(($ObjAllSserversWithUpdates.Name).ToUpper() -join ', '))</h1></br></br>"
+            $MessageBody += (((($ObjAllSserversWithUpdates | Select-Object ToUpdate, @{L = "Name"; E = {($_.Name).ToUpper()}}, Product, VersionName, Edition, ProductLevel, `
                             @{L = "Current Build"; E = {$_.Build}}, `
                             @{L = "Available Build"; E = {(($_.Updates).Build) -join " </br> "}}, `
                             @{L = "Cumulative Update"; E = {(($_.Updates).CumulativeUpdate) -join " </br> "}}, `

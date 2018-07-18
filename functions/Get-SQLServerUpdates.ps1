@@ -51,11 +51,11 @@ function Get-SQLServerUpdates {
     (
         #Version SQL Sever 
         [ValidateSet('SQL Server 2008', 
-                     'SQL Server 2008 R2', 
-                     'SQL Server 2012', 
-                     'SQL Server 2014', 
-                     'SQL Server 2016', 
-                     'SQL Server 2017')]$Version
+            'SQL Server 2008 R2', 
+            'SQL Server 2012', 
+            'SQL Server 2014', 
+            'SQL Server 2016', 
+            'SQL Server 2017')]$Version
     )
 
     Begin {
@@ -73,12 +73,12 @@ function Get-SQLServerUpdates {
         }
         
         switch ($Version) {
-            'SQL Server 2008'    {$updatesbefore = $content.Links | Where-Object InnerText -like "*SQL*2008?U*"}
+            'SQL Server 2008' {$updatesbefore = $content.Links | Where-Object InnerText -like "*SQL*2008?U*"}
             'SQL Server 2008 R2' {$updatesbefore = $content.Links | Where-Object InnerText -like "*SQL*2008?R2*"}
-            'SQL Server 2012'    {$updatesafter = $content.Links | Where-Object InnerText -like "*SQL*2012*"}
-            'SQL Server 2014'    {$updatesafter = $content.Links | Where-Object InnerText -like "*SQL*2014*"}
-            'SQL Server 2016'    {$updatesafter = $content.Links | Where-Object InnerText -like "SQL*2016*"}
-            'SQL Server 2017'    {$updatesafter = $content.Links | Where-Object InnerText -like "SQL*2017*"}
+            'SQL Server 2012' {$updatesafter = $content.Links | Where-Object InnerText -like "*SQL*2012*"}
+            'SQL Server 2014' {$updatesafter = $content.Links | Where-Object InnerText -like "*SQL*2014*"}
+            'SQL Server 2016' {$updatesafter = $content.Links | Where-Object InnerText -like "SQL*2016*"}
+            'SQL Server 2017' {$updatesafter = $content.Links | Where-Object InnerText -like "SQL*2017*"}
             Default {
                 # After SQL Server 2012
                 $updatesafter = $content.Links | Where-Object InnerText -like "SQL*2[0-9][1-9][0-9]*"
@@ -102,7 +102,7 @@ function Get-SQLServerUpdates {
 
                 try {
                     $updateslistTR = ($updateslist.ParsedHtml).IHTMLDocument3_getElementsByTagName("tr")
-                    $updateslistTD = $updateslistTR | foreach {($_.children)}
+                    $updateslistTD = $updateslistTR | ForEach-Object {($_.children)}
                 }
                 catch {                     
                     Write-Warning $_.Exception.Message
@@ -151,7 +151,7 @@ function Get-SQLServerUpdates {
 
                 try {
                     $updateslistTR = ($updateslist.ParsedHtml).IHTMLDocument3_getElementsByTagName("tr")
-                    $updateslistTD = $updateslistTR | foreach {($_.children)}
+                    $updateslistTD = $updateslistTR | ForEach-Object {($_.children)}
                 }
                 catch {                     
                     Write-Warning $_.Exception.Message
@@ -159,7 +159,7 @@ function Get-SQLServerUpdates {
                 }
 
                 for ($i = 4; $i -lt $updateslistTD.Count; $i++) { 
-                    $object = @{} | Select Name, ServicePack, CumulativeUpdate, Link, ReleaseDate, Build, SupportEnds
+                    $object = @{} | Select-Object Name, ServicePack, CumulativeUpdate, Link, ReleaseDate, Build, SupportEnds
                     $object.Name = ($update.innerText).Replace(" Updates", "")
                     $object.ServicePack = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
                     $object.CumulativeUpdate = $null;
