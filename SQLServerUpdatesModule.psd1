@@ -10,13 +10,14 @@
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
    Date: 26.01.2018
-   Version: 1.0.0.6
+   Version: 1.0.0.8
     
    Keywords: SQL Server, Updates, Get
    Notes: 1.0.0.4 - Get-SQLServerUpdates. Added new object (Link) with links without marks HTML.
 		  1.0.0.5 - Repaired error with TLS 1.2 and added SQL Server 2017
           1.0.0.6 - issue repaired - HTML Report Has Duplicates the previous Servers available builds
           1.0.0.7 - issue repaired - Cannot index into a null array and added path validation for report
+          1.0.0.8 - fixed problem with parameters in a pipeline
 #>
 
 @{
@@ -25,7 +26,7 @@
     RootModule             = 'SQLServerUpdatesModule.psm1'
 	
     # Version number of this module.
-    ModuleVersion          = '1.0.0.7'
+    ModuleVersion          = '1.0.0.8'
 	
     # ID used to uniquely identify this module
     GUID                   = '9fde4b8f-637b-4a3a-ac62-5235c875dc30'
