@@ -11,11 +11,12 @@
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
    Date: 16.07.2017
-   Version: 1.0.0.6
+   Version: 1.0.0.9
     
    Keywords: Shared function, Version, SQL Server
    Notes: 1.0.0.4 - Without change.
           1.0.0.6 - Repaired syntax
+          1.0.0.9 - Added SQL Server 2017 to Get-SQLServerFullName function
 #>
 
 Function Get-SQLServerFullName($param) {
@@ -26,6 +27,7 @@ Function Get-SQLServerFullName($param) {
         11 { return "SQL Server 2012"}
         12 { return "SQL Server 2014"}
         13 { return "SQL Server 2016"}
+        14 { return "SQL Server 2017"}
     }
 }
 
@@ -34,39 +36,42 @@ function Get-SQLServerVersion {
     Param
     (
         # Param1 help description
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]$ServerInstance
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [string]$ServerInstance
     )
 
-    Begin
-    { }
-
-    Process {
+    Begin{ 
+    
+    }
+    Process 
+    {
         try { 
             $connectsqlserver = New-Object Microsoft.SqlServer.Management.Smo.Server $ServerInstance
             $connectsqlserver.ConnectionContext.ApplicationName = "DBA PowerShell App"
-            $connectsqlserver.ConnectionContext.ConnectTimeout = 1
+            $connectsqlserver.ConnectionContext.ConnectTimeout = 10
 
             Write-Verbose "Connect to server $ServerInstance"
             if ($connectsqlserver.ConnectionContext.IsOpen -eq $false) {
 
+                Write-Verbose "ConnectionString:$($connectsqlserver.ConnectionContext)"
+                $connectsqlserver.ConnectionContext.LoginSecure = $true
                 $connectsqlserver.ConnectionContext.Connect()
             }
+
+            $connectsqlserver | Select-Object Name, Product, Edition, ProductLevel, VersionMajor, 
+            @{L = "VersionName"; E = {Get-SQLServerFullName $_.versionmajor}}, @{L = "Build"; E = {$_.VersionString}} 
+
         }
         catch {
-            Write-Host $_.Exception.Message -ForegroundColor Yellow               
-        }
-        finally { 
-            $connectsqlserver | Select-Object Name, Product, Edition, ProductLevel, VersionMajor, @{L = "VersionName"; E = {Get-SQLServerFullName $_.versionmajor}}, @{L = "Build"; E = {$_.VersionString}} 
+            Write-Debug -Message $_.Exception
+            Write-Host $_.Exception.Message -ForegroundColor Yellow  
         }
     }
     End {        
-        Write-Verbose "Disconnect all connection"
+        Write-Verbose "The disconnect connection with $ServerInstance"
         try {
             if ($connectsqlserver.ConnectionContext.IsOpen -eq $true) {
                 $connectsqlserver.ConnectionContext.Disconnect()
-            }
-            else {
-                
             }
         }
         catch {
@@ -74,4 +79,3 @@ function Get-SQLServerVersion {
         }
     }
 }
-
