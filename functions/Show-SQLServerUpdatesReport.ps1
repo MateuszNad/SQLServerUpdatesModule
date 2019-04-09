@@ -94,13 +94,14 @@ function Show-SQLServerUpdatesReport {
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
    Date: 16.07.2017
-   Version: 1.0.0.6
+   Version: 1.0.1.0
     
    Keywords: SQL Server, Updates, Get, Reports, Show
    Notes: 1.0.0.4 - Without change.
           1.0.0.6 - issue repaired - HTML Report Has Duplicates the previous Servers available builds
                     Repaired syntax and change changed name variables "$object" to $ObjAllSserversWithUpdates
           1.0.0.8 - fixed problem with parameters in a pipeline
+          1.0.0.9 - 
 
 #>
 
@@ -131,7 +132,7 @@ function Show-SQLServerUpdatesReport {
             $pathAttribute.Mandatory = $true
  
             #create an attributecollection object for the attribute we just created.
-            $attributeCollection = new-object System.Collections.ObjectModel.Collection[System.Attribute]
+            $attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
  
             #add our custom attribute
             $attributeCollection.Add($pathAttribute)
@@ -163,9 +164,9 @@ function Show-SQLServerUpdatesReport {
             }
         }
         
-        if($BuildNumber) {
+        if ($BuildNumber) {
             #Create new object
-            $ServerInstance = @{} | Select-Object VersionMajor, Build, VersionName
+            $ServerInstance = @{ } | Select-Object VersionMajor, Build, VersionName
             $ServerInstance.Build = $BuildNumber
             $ServerInstance.VersionName = Get-SQLServerFullName ([int]($BuildNumber.Split(".")[0]))
             #$ServerInstance.VersionName = Get-SQLServerVersion ([int]($BuildNumber.Split(".")[0]))
@@ -217,7 +218,7 @@ function Show-SQLServerUpdatesReport {
             }
 
             #Create new object
-            $ObjServer = @{} | Select-Object Name, Product, VersionName, Edition, ProductLevel, Build, Updates, ToUpdate
+            $ObjServer = @{ } | Select-Object Name, Product, VersionName, Edition, ProductLevel, Build, Updates, ToUpdate
             $ObjServer.Name = $Instance.Name
             $ObjServer.Product = $Instance.Product
             $ObjServer.VersionName = $Instance.VersionName
@@ -226,10 +227,10 @@ function Show-SQLServerUpdatesReport {
             $ObjServer.Build = $Instance.Build    
 
             # If check updates for SQL Server 2005
-            if([int]($Instance.VersionMajor) -eq 9) {
+            if ([int]($Instance.VersionMajor) -eq 9) {
                 Write-Debug "[[int]($($Instance.VersionMajor)) -eq 9]:true" 
 
-                $ObjUpdate = @{} | Select-Object CumulativeUpdate, ReleaseDate, Build, SupportEnds, ServicePack
+                $ObjUpdate = @{ } | Select-Object CumulativeUpdate, ReleaseDate, Build, SupportEnds, ServicePack
                 $ObjUpdate.CumulativeUpdate = ""
                 $ObjUpdate.ReleaseDate = "2012/10/09"
                 $ObjUpdate.Build = "9.00.5324"
@@ -247,7 +248,7 @@ function Show-SQLServerUpdatesReport {
                 # if SQL Server is latest Version       
                 if (([double](($Instance.Build) -Replace "\.(.|..)\.", "") -ge [double](($UpdatesServer[0].Build) -replace "\.(.|..)\.", "")) -or ($UpdatesServer[0].Build -eq "") -and ($UpdatesServer[0].Build -ne "various")) {
                     Write-Debug "[([double](($($Instance.Build)) -Replace '\.(.|..)\.', '') -ge [double](($($UpdatesServer[0].Build)) -replace '\.(.|..)\.', ''))]:true"
-                    $ObjUpdate = @{} | Select-Object CumulativeUpdate, ReleaseDate, Build, SupportEnds, ServicePack
+                    $ObjUpdate = @{ } | Select-Object CumulativeUpdate, ReleaseDate, Build, SupportEnds, ServicePack
                     $ObjUpdate.CumulativeUpdate = $UpdatesServer[0].CumulativeUpdate
                     $ObjUpdate.ReleaseDate = $UpdatesServer[0].ReleaseDate
                     $ObjUpdate.Build = $UpdatesServer[0].Build
@@ -272,7 +273,7 @@ function Show-SQLServerUpdatesReport {
                             Write-Debug "[if ($($Update.Build) -ne 'various')]:true"
                             if ([double](($Instance.Build) -Replace "\.(.|..)\.", "") -lt [double](($Update.Build) -replace "\.(.|..)\.", "")) {
                                 Write-Debug "[if ([double](($($Instance.Build)) -Replace '\.(.|..)\.', '') -lt [double](($($Update.Build)) -replace '\.(.|..)\.', ''))]:true"
-                                $ObjUpdate = @{} | Select-Object CumulativeUpdate, ReleaseDate, Build, SupportEnds, ServicePack
+                                $ObjUpdate = @{ } | Select-Object CumulativeUpdate, ReleaseDate, Build, SupportEnds, ServicePack
                                 $ObjUpdate.CumulativeUpdate = $Update.CumulativeUpdate
                                 $ObjUpdate.ReleaseDate = $Update.ReleaseDate
                                 $ObjUpdate.Build = $Update.Build
@@ -422,12 +423,10 @@ function Show-SQLServerUpdatesReport {
                         Information about updates getting with site <a href='https://sqlserverupdates.com' target='_blank'>https://sqlserverupdates.com</a>"
 
         #Header for report
-        if($ObjAllSserversWithUpdates.Name)
-        {
+        if ($ObjAllSserversWithUpdates.Name) {
             $HeaderReport = ($ObjAllSserversWithUpdates.Name).ToUpper() -join ', '
         }
-        elseif($BuildNumber)
-        {
+        elseif ($BuildNumber) {
             $HeaderReport = $BuildNumber
         }
 
@@ -436,13 +435,13 @@ function Show-SQLServerUpdatesReport {
             Write-Verbose "Preparation of an HTML report"
             Write-Debug "[($HTML -and $ObjAllSserversWithUpdates)]:true"
             $MessageBody += "<h1>Updates Report - ($HeaderReport)</h1></br></br>"
-            $MessageBody += (((($ObjAllSserversWithUpdates | Select-Object ToUpdate, @{L = "Name"; E = {($_.Name).ToUpper()}}, Product, VersionName, Edition, ProductLevel, `
-                            @{L = "Current Build"; E = {$_.Build}}, `
-                            @{L = "Available Build"; E = {(($_.Updates).Build) -join " </br> "}}, `
-                            @{L = "Cumulative Update"; E = {(($_.Updates).CumulativeUpdate) -join " </br> "}}, `
-                            @{L = "Release Date"; E = {(($_.Updates).ReleaseDate) -join " </br> "}}, `
-                            @{L = "Support Ends"; E = {"<b>$((($_.Updates).SupportEnds)-join " </br> ")</b>"}}, `
-                            @{L = "ServicePack "; E = {(($_.Updates).ServicePack) -join "</br> "}} |
+            $MessageBody += (((($ObjAllSserversWithUpdates | Select-Object ToUpdate, @{L = "Name"; E = { ($_.Name).ToUpper() } }, Product, VersionName, Edition, ProductLevel, `
+                            @{L = "Current Build"; E = { $_.Build } }, `
+                            @{L = "Available Build"; E = { (($_.Updates).Build) -join " </br> " } }, `
+                            @{L = "Cumulative Update"; E = { (($_.Updates).CumulativeUpdate) -join " </br> " } }, `
+                            @{L = "Release Date"; E = { (($_.Updates).ReleaseDate) -join " </br> " } }, `
+                            @{L = "Support Ends"; E = { "<b>$((($_.Updates).SupportEnds)-join " </br> ")</b>" } }, `
+                            @{L = "ServicePack "; E = { (($_.Updates).ServicePack) -join "</br> " } } |
                             ConvertTo-Html -Title "Updates Report" -PostContent $PostContent).Replace("&lt;", "<")).Replace("&gt;", ">")).Replace("&quot;", """")).replace("<tr><td>True", "<tr><td class='toupdate'>True") 
             try {
                 Write-Verbose "Create file: $($PSBoundParameters.Path)"

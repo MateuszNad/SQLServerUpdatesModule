@@ -11,7 +11,7 @@
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
    Date: 16.07.2017
-   Version: 1.0.0.9
+   Version: 1.0.1.0
     
    Keywords: Shared function, Version, SQL Server
    Notes: 1.0.0.4 - Without change.
@@ -21,13 +21,13 @@
 
 Function Get-SQLServerFullName($param) {
     switch ($param) {
-        9 { return "SQL Server 2005"}
-        10 { return "SQL Server 2008"}
-        10.50 { return "SQL Server 2008 R2"}
-        11 { return "SQL Server 2012"}
-        12 { return "SQL Server 2014"}
-        13 { return "SQL Server 2016"}
-        14 { return "SQL Server 2017"}
+        9 { return "SQL Server 2005" }
+        10 { return "SQL Server 2008" }
+        10.50 { return "SQL Server 2008 R2" }
+        11 { return "SQL Server 2012" }
+        12 { return "SQL Server 2014" }
+        13 { return "SQL Server 2016" }
+        14 { return "SQL Server 2017" }
     }
 }
 
@@ -40,11 +40,10 @@ function Get-SQLServerVersion {
         [string]$ServerInstance
     )
 
-    Begin{ 
+    Begin { 
     
     }
-    Process 
-    {
+    Process {
         try { 
             $connectsqlserver = New-Object Microsoft.SqlServer.Management.Smo.Server $ServerInstance
             $connectsqlserver.ConnectionContext.ApplicationName = "DBA PowerShell App"
@@ -59,7 +58,7 @@ function Get-SQLServerVersion {
             }
 
             $connectsqlserver | Select-Object Name, Product, Edition, ProductLevel, VersionMajor, 
-            @{L = "VersionName"; E = {Get-SQLServerFullName $_.versionmajor}}, @{L = "Build"; E = {$_.VersionString}} 
+            @{L = "VersionName"; E = { Get-SQLServerFullName $_.versionmajor } }, @{L = "Build"; E = { $_.VersionString } } 
 
         }
         catch {

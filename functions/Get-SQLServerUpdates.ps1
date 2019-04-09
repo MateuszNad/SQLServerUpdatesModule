@@ -36,12 +36,13 @@ function Get-SQLServerUpdates {
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
    Date: 09.12.2017
-   Version: 1.0.0.6
+   Version: 1.0.1.0
     
    Keywords: SQL Server, Updates, Get
    Notes: 1.0.0.4 - Added new object (Link) with links without marks HTML.
           1.0.0.5 - Repaired error with TLS 1.2 and added SQL Server 2017
           1.0.0.7 - Repaired error Cannot index into a null array.
+          1.0.1.0 - Repaired error with SQL Server 2017 and refactoring of code.
 
 #>
     [CmdletBinding()]
@@ -71,119 +72,89 @@ function Get-SQLServerUpdates {
             Write-Host "Check connection..."
             Break
         }
-        
-        switch ($Version) {
-            'SQL Server 2008' {$updatesbefore = $content.Links | Where-Object InnerText -like "*SQL*2008?U*"}
-            'SQL Server 2008 R2' {$updatesbefore = $content.Links | Where-Object InnerText -like "*SQL*2008?R2*"}
-            'SQL Server 2012' {$updatesafter = $content.Links | Where-Object InnerText -like "*SQL*2012*"}
-            'SQL Server 2014' {$updatesafter = $content.Links | Where-Object InnerText -like "*SQL*2014*"}
-            'SQL Server 2016' {$updatesafter = $content.Links | Where-Object InnerText -like "SQL*2016*"}
-            'SQL Server 2017' {$updatesafter = $content.Links | Where-Object InnerText -like "SQL*2017*"}
-            Default {
-                # After SQL Server 2012
-                $updatesafter = $content.Links | Where-Object InnerText -like "SQL*2[0-9][1-9][0-9]*"
 
-                # Before SQL Server 2012
-                $updatesbefore = $content.Links| Where-Object InnerText -like "SQL*2[0-9][0-9]8*"
+        # setting for count of column in table on website
+        $ColumnSetting = [ordered]@{
+            'SQL Server 2008'    = 4
+            'SQL Server 2008 R2' = 5
+            'SQL Server 2012'    = 5
+            'SQL Server 2014'    = 5
+            'SQL Server 2016'    = 5
+            'SQL Server 2017'    = 4
+        }
+        
+        $VersionSQL = [ordered]@{
+            'SQL Server 2008'    = ($content.Links | Where-Object InnerText -like "SQL*2008?U*")
+            'SQL Server 2008 R2' = ($content.Links | Where-Object InnerText -like "SQL*2008?R2*")
+            'SQL Server 2012'    = ($content.Links | Where-Object InnerText -like "SQL*2012*")
+            'SQL Server 2014'    = ($content.Links | Where-Object InnerText -like "SQL*2014*")
+            'SQL Server 2016'    = ($content.Links | Where-Object InnerText -like "SQL*2016*")
+            'SQL Server 2017'    = ($content.Links | Where-Object InnerText -like "SQL*2017*")
+        }
+
+        # if set parameter -Version
+        if ($Version) {
+            $VersionSQL = [ordered]@{
+                $Version = $VersionSQL.$Version
             }
         }
     }
     Process {
-        # After SQL Server 2012
-        if ($updatesafter.href -ne $null) {
-            foreach ($update in $updatesafter) {
-                try {
-                    $updateslist = Invoke-WebRequest -Uri $update.href
-                }
-                catch {
-                    Write-Warning $_.Exception.Message
-                    Break
-                }
-
-                try {
-                    $updateslistTR = ($updateslist.ParsedHtml).IHTMLDocument3_getElementsByTagName("tr")
-                    $updateslistTD = $updateslistTR | ForEach-Object {($_.children)}
-                }
-                catch {                     
-                    Write-Warning $_.Exception.Message
-                    Break
-                }
-
-                for ($i = 5; $i -lt $updateslistTD.Count; $i++) { 
-                    $object = @{} | Select Name, ServicePack, CumulativeUpdate, ReleaseDate, Link, Build, SupportEnds
-                    $object.Name = ($update.innerText).Replace(" Updates", "")
-                    $object.ServicePack = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
-                    $object.CumulativeUpdate = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
-                    $object.ReleaseDate = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
-
-                    try {
-
-                        if ([regex]::Matches($object.CumulativeUpdate, $linkRegex) -ne "") {
-                            $object.Link = ([regex]::Matches($object.CumulativeUpdate, $linkRegex)[0].Value).Replace('"', '')
-                        }
-                        elseif ([regex]::Matches($object.ServicePack, $linkRegex) -ne "") {
-                            $object.Link = ([regex]::Matches($object.ServicePack, $linkRegex)[0].Value).Replace('"', '')
-                        }
-                    }
-                    catch {
-                        $object.Link = $null
-                    }
-
-                    $object.Build = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
-                    $object.SupportEnds = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", "")
-                    $ObjReturn += $object
-
-                    #$linkRegex = '"[^"]*"'
-                    #([regex]::Matches($ObjReturn[5].CumulativeUpdate,$linkRegex)[0].Value).Replace('"','')
-                }
+        foreach ($SQL in $VersionSQL.Keys) {
+            #$SQL = 'SQL Server 2008'
+            try {
+                $ListUpdates = Invoke-WebRequest -Uri $VersionSQL.$SQL.href
             }
-        }
-        # Before SQL Server 2012
-        if ($updatesbefore.href -ne $null) {
-            foreach ($update in $updatesbefore) {
+            catch {
+                Write-Warning $_.Exception.Message
+                Break
+            }
+                
+            try {
+                $tableUpdateTR = ($ListUpdates.ParsedHtml).IHTMLDocument3_getElementsByTagName("tr")
+                $tableUpdateTD = $tableUpdateTR | ForEach-Object { ($_.children) }
+            }
+            catch {                     
+                Write-Warning $_.Exception.Message
+                Break
+            }
+
+            for ($i = $ColumnSetting.$SQL; $i -lt $tableUpdateTD.Count; $i++) { 
+                # new object
+                $update = @{ } | Select-Object Name, ServicePack, CumulativeUpdate, ReleaseDate, Link, Build, SupportEnds
+                $update.Name = ($VersionSQL.$SQL.innerText).Replace(" Updates", "")
+
+                if ($ColumnSetting.$SQL -eq 5) {
+                    $update.ServicePack = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
+                    $update.CumulativeUpdate = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
+                    $update.ReleaseDate = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
+                    $update.Build = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
+                    $update.SupportEnds = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", "")
+                }
+                elseif ($ColumnSetting.$SQL -eq 4) {
+                    $update.ServicePack = ''
+                    $update.CumulativeUpdate = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
+                    $update.ReleaseDate = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
+                    $update.Build = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
+                    $update.SupportEnds = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", "")
+                }
+
                 try {
-                    $updateslist = Invoke-WebRequest -Uri $update.href
+
+                    if ([regex]::Matches($update.CumulativeUpdate, $linkRegex) -ne "") {
+                        $update.Link = ([regex]::Matches($update.CumulativeUpdate, $linkRegex)[0].Value).Replace('"', '')
+                    }
+                    elseif ([regex]::Matches($object.ServicePack, $linkRegex) -ne "") {
+                        $update.Link = ([regex]::Matches($update.ServicePack, $linkRegex)[0].Value).Replace('"', '')
+                    }
                 }
                 catch {
-                    Write-Warining $_.Exception.Message
-                    Break
+                    $object.Link = $null
                 }
 
-                try {
-                    $updateslistTR = ($updateslist.ParsedHtml).IHTMLDocument3_getElementsByTagName("tr")
-                    $updateslistTD = $updateslistTR | ForEach-Object {($_.children)}
-                }
-                catch {                     
-                    Write-Warning $_.Exception.Message
-                    Break
-                }
+                $ObjReturn += $update
+            }
 
-                for ($i = 4; $i -lt $updateslistTD.Count; $i++) { 
-                    $object = @{} | Select-Object Name, ServicePack, CumulativeUpdate, Link, ReleaseDate, Build, SupportEnds
-                    $object.Name = ($update.innerText).Replace(" Updates", "")
-                    $object.ServicePack = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
-                    $object.CumulativeUpdate = $null;
-
-                    try {
-
-                        $linkRegex = '"[^"]*"'
-                        if ([regex]::Matches($object.CumulativeUpdate, $linkRegex) -ne "") {
-                            $object.Link = ([regex]::Matches($object.CumulativeUpdate, $linkRegex)[0].Value).Replace('"', '')
-                        }
-                        elseif ([regex]::Matches($object.ServicePack, $linkRegex) -ne "") {
-                            $object.Link = ([regex]::Matches($object.ServicePack, $linkRegex)[0].Value).Replace('"', '')
-                        }
-                    }
-                    catch {
-                        $object.Link = $null
-                    }
-
-                    $object.ReleaseDate = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
-                    $object.Build = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
-                    $object.SupportEnds = (($updateslistTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", "")
-                    $ObjReturn += $object
-                }
-            }  
         }
     }
     End {
