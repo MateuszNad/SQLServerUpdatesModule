@@ -1,5 +1,5 @@
 # SqlServerUpdatesModule
-    The module downloads information about the newest available updates for SQL Server instances. 
+The module downloads information about the newest available updates for SQL Server instances. 
 
 ## Installing
 To install the released version via PowerShell Gallery:
