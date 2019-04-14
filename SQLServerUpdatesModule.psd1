@@ -19,7 +19,9 @@
           1.0.0.7 - issue repaired - Cannot index into a null array and added path validation for report
           1.0.0.8 - fixed problem with parameters in a pipeline
           1.0.0.9 - Added SQL Server 2017 to Get-SQLServerFullName function
-          1.0.1.0 - Repaired error with SQL Server 2017 and refactoring of code (Get-SQLSeverUpdates).                    
+          1.0.1.0 - Repaired error with SQL Server 2017 and refactoring of code (Get-SQLSeverUpdates).
+          1.0.1.1 - Repaired error with SQL Server 2008 R2
+                    
 #>
 
 @{
@@ -28,7 +30,7 @@
     RootModule             = 'SQLServerUpdatesModule.psm1'
 	
     # Version number of this module.
-    ModuleVersion          = '1.0.1.0'
+    ModuleVersion          = '1.0.1.1'
 	
     # ID used to uniquely identify this module
     GUID                   = '9fde4b8f-637b-4a3a-ac62-5235c875dc30'

@@ -36,13 +36,14 @@ function Get-SQLServerUpdates {
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
    Date: 09.12.2017
-   Version: 1.0.1.0
+   Version: 1.0.1.1
     
    Keywords: SQL Server, Updates, Get
    Notes: 1.0.0.4 - Added new object (Link) with links without marks HTML.
           1.0.0.5 - Repaired error with TLS 1.2 and added SQL Server 2017
           1.0.0.7 - Repaired error Cannot index into a null array.
           1.0.1.0 - Repaired error with SQL Server 2017 and refactoring of code.
+          1.0.1.1 - Repaired error with SQL Server 2008 R2
 
 #>
     [CmdletBinding()]
@@ -56,7 +57,8 @@ function Get-SQLServerUpdates {
             'SQL Server 2012', 
             'SQL Server 2014', 
             'SQL Server 2016', 
-            'SQL Server 2017')]$Version
+            'SQL Server 2017')]
+        [string]$Version
     )
 
     Begin {
@@ -65,18 +67,19 @@ function Get-SQLServerUpdates {
         try {
             #Enable TLS 1.2 
             [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-            $content = Invoke-WebRequest -Uri http://sqlserverupdates.com/
+            $content = Invoke-WebRequest -Uri 'http://sqlserverupdates.com/'
         }
         catch {
-            Write-Warning $_.Exception.Message
             Write-Host "Check connection..."
+
+            Write-Warning $_.Exception.Message
             Break
         }
 
         # setting for count of column in table on website
         $ColumnSetting = [ordered]@{
             'SQL Server 2008'    = 4
-            'SQL Server 2008 R2' = 5
+            'SQL Server 2008 R2' = 4
             'SQL Server 2012'    = 5
             'SQL Server 2014'    = 5
             'SQL Server 2016'    = 5
@@ -89,9 +92,8 @@ function Get-SQLServerUpdates {
             'SQL Server 2012'    = ($content.Links | Where-Object InnerText -like "SQL*2012*")
             'SQL Server 2014'    = ($content.Links | Where-Object InnerText -like "SQL*2014*")
             'SQL Server 2016'    = ($content.Links | Where-Object InnerText -like "SQL*2016*")
-            'SQL Server 2017'    = ($content.Links | Where-Object InnerText -like "SQL*2017*")
+            'SQL Server 2017'    = ($content.Links | Where-Object outerHTML -like "SQL*2017*")
         }
-
         # if set parameter -Version
         if ($Version) {
             $VersionSQL = [ordered]@{
@@ -158,7 +160,6 @@ function Get-SQLServerUpdates {
         }
     }
     End {
-        # Return Updates
         return $ObjReturn
     }
 }
