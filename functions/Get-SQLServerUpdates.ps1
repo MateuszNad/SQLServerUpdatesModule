@@ -1,4 +1,7 @@
 ﻿#Requires -Version 4.0
+# https://github.com/AngleSharp/AngleSharp
+# https://github.com/AngleSharp/AngleSharp/blob/master/doc/Basics.md
+
 function Get-SQLServerUpdates {
     <#
 .Synopsis
@@ -44,6 +47,7 @@ function Get-SQLServerUpdates {
           1.0.0.7 - Repaired error Cannot index into a null array.
           1.0.1.0 - Repaired error with SQL Server 2017 and refactoring of code.
           1.0.1.1 - Repaired error with SQL Server 2008 R2
+          1.0.1.2 - Bad property outerHTML instead of innerText in the function Get-SQLServerUpdates
 
 #>
     [CmdletBinding()]
@@ -92,7 +96,7 @@ function Get-SQLServerUpdates {
             'SQL Server 2012'    = ($content.Links | Where-Object InnerText -like "SQL*2012*")
             'SQL Server 2014'    = ($content.Links | Where-Object InnerText -like "SQL*2014*")
             'SQL Server 2016'    = ($content.Links | Where-Object InnerText -like "SQL*2016*")
-            'SQL Server 2017'    = ($content.Links | Where-Object outerHTML -like "SQL*2017*")
+            'SQL Server 2017'    = ($content.Links | Where-Object InnerText -like "SQL*2017*")
         }
         # if set parameter -Version
         if ($Version) {
