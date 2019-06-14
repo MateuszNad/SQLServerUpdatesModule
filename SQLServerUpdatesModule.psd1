@@ -10,7 +10,7 @@
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
    Date: 26.01.2018
-   Version: 1.0.1.0
+   Version: 1.1.0.0
     
    Keywords: SQL Server, Updates, Get
    Notes: 1.0.0.4 - Get-SQLServerUpdates. Added new object (Link) with links without marks HTML.
@@ -19,9 +19,8 @@
           1.0.0.7 - issue repaired - Cannot index into a null array and added path validation for report
           1.0.0.8 - fixed problem with parameters in a pipeline
           1.0.0.9 - Added SQL Server 2017 to Get-SQLServerFullName function
-          1.0.1.0 - Repaired error with SQL Server 2017 and refactoring of code (Get-SQLSeverUpdates).
-          1.0.1.1 - Repaired error with SQL Server 2008 R2
-          1.0.1.2 - Bad property outerHTML instead of innerHTML in the function Get-SQLServerUpdates
+          1.1.0.0 - Refactoring code. Added functions Invoke-SqlServerUpdatesScan and Export-SqlServerUpdatesScan
+
 #>
 
 @{
@@ -30,7 +29,7 @@
     RootModule             = 'SQLServerUpdatesModule.psm1'
 	
     # Version number of this module.
-    ModuleVersion          = '1.0.1.2'
+    ModuleVersion          = '1.1.0.0'
 	
     # ID used to uniquely identify this module
     GUID                   = '9fde4b8f-637b-4a3a-ac62-5235c875dc30'
@@ -89,11 +88,14 @@
     # Functions to export from this module
     FunctionsToExport      = @(
         'Get-SQLServerUpdates',
-        'Show-SQLServerUpdatesReport'
+        'Show-SQLServerUpdatesReport',
+        'Export-SqlServerUpdatesScan',
+        'Invoke-SqlServerUpdatesScan',
+        'Get-SQLServerVersion'
     )
 	
     # Cmdlets to export from this module
-    CmdletsToExport        = '*'
+    CmdletsToExport        = ''
 	
     # Variables to export from this module
     VariablesToExport      = '*'
