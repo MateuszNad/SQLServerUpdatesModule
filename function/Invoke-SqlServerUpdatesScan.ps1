@@ -69,6 +69,26 @@ function Invoke-SqlServerUpdatesScan {
 
     Returns information about deficit of installed updates for instance with parameter ServerInstance. This command returns objects.
 
+.EXAMPLE
+    Invoke-SqlServerUpdatesScan -ServerInstance IT-MN-M -SqlCredential mnadobnik
+
+    PowerShell credential request
+    Enter your credentials.
+    Password for user mnadobnik: ***********
+
+
+    Name         : IT-MN-M
+    Product      : Microsoft SQL Server
+    VersionName  : SQL Server 2017
+    Edition      : Developer Edition (64-bit)
+    ProductLevel : RTM
+    Build        : 14.0.1000.169
+    Updates      : {14.0.3162.1, 14.0.3076.1, 14.0.3049.1, 14.0.3048.4…}
+    ToUpdate     : True
+
+    Returns information about deficit of installed updates for instance with parameter ServerInstance. This command returns objects.
+
+
 .LINK
    Author: Mateusz Nadobnik 
    Link: mnadobnik.pl
