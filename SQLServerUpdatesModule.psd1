@@ -21,6 +21,8 @@
           1.0.0.9 - Added SQL Server 2017 to Get-SQLServerFullName function
           1.1.0.0 - Refactoring code. Added functions Invoke-SqlServerUpdatesScan and Export-SqlServerUpdatesScan
           1.1.0.1 - Added parameter - SqlCredential to Get-SqlServerVersion
+          1.1.0.2 - Added SqlCredential to Invoke-SqlServerUpdatesScan
+
 
 #>
 
@@ -30,7 +32,7 @@
     RootModule             = 'SQLServerUpdatesModule.psm1'
 	
     # Version number of this module.
-    ModuleVersion          = '1.1.0.1'
+    ModuleVersion          = '1.1.0.2'
 	
     # ID used to uniquely identify this module
     GUID                   = '9fde4b8f-637b-4a3a-ac62-5235c875dc30'

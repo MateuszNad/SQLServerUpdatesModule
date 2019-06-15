@@ -48,7 +48,7 @@ function Get-SQLServerUpdates {
           1.0.1.0 - Repaired error with SQL Server 2017 and refactoring of code.
           1.0.1.1 - Repaired error with SQL Server 2008 R2
           1.0.1.2 - Bad property outerHTML instead of innerText in the function Get-SQLServerUpdates
-
+          1.1.0.2 - Added SqlCredential
 #>
     [CmdletBinding()]
     [Alias()]

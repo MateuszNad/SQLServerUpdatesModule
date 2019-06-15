@@ -96,7 +96,8 @@ function Invoke-SqlServerUpdatesScan {
             ValueFromPipelineByPropertyName = $true, 
             Position = 1, 
             ParameterSetName = 'Version')]
-        [string]$BuildNumber
+        [string]$BuildNumber,
+        [string]$SqlCredential
         #Return report HTML
     )
     Begin {
@@ -144,7 +145,13 @@ function Invoke-SqlServerUpdatesScan {
             if (-not $BuildNumber) {  
                 Write-Debug "[if (-not $BuildNumber)]:true"
                 Write-Verbose "Run:Get-SQLServerVersion, Parameters :-ServerInstance $SqlInstance"
-                $Instance = Get-SQLServerVersion2 -ServerInstance $SqlInstance
+                if ($SqlCredential) {
+                    $Instance = Get-SQLServerVersion -ServerInstance $SqlInstance -SqlCredential $SqlCredential
+                }
+                else {
+                    $Instance = Get-SQLServerVersion -ServerInstance $SqlInstance
+                }
+
                 Write-Verbose "Result:Get-SQLServerVersion $Instance"
             }
             else {
