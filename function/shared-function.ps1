@@ -17,6 +17,7 @@
    Notes: 1.0.0.4 - Without change.
           1.0.0.6 - Repaired syntax
           1.0.0.9 - Added SQL Server 2017 to Get-SQLServerFullName function
+          1.1.0.1 - Added parameter - SqlCredential
 #>
 
 Function Get-SQLServerFullName($param) {
@@ -37,7 +38,9 @@ function Get-SQLServerVersion {
     (
         # Param1 help description
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [string]$ServerInstance
+        [string]$ServerInstance,
+        [Parameter()]
+        [PSCredential]$SqlCredential
     )
 
     Begin { 
@@ -45,66 +48,47 @@ function Get-SQLServerVersion {
     }
     Process {
         try { 
-            
             $connectsqlserver = New-Object Microsoft.SqlServer.Management.Smo.Server $ServerInstance
-            $connectsqlserver.ConnectionContext.ApplicationName = "DBA PowerShell App"
+            $connectsqlserver.ConnectionContext.ApplicationName = "SqlServerUpdatesModule"
             $connectsqlserver.ConnectionContext.ConnectTimeout = 10
 
             Write-Verbose "Connect to server $ServerInstance"
             if ($connectsqlserver.ConnectionContext.IsOpen -eq $false) {
 
-                Write-Verbose "ConnectionString:$($connectsqlserver.ConnectionContext)"
-                $connectsqlserver.ConnectionContext.LoginSecure = $true
-                $connectsqlserver.ConnectionContext.Connect()
-            }
+                if ($null -ne $SqlCredential.UserName) {
+                    $username = ($SqlCredential.UserName).TrimStart("\")
 
-            $connectsqlserver | Select-Object Name, Product, Edition, ProductLevel, VersionMajor, 
-            @{L = "VersionName"; E = { Get-SQLServerFullName $_.versionmajor } }, @{L = "Build"; E = { $_.VersionString } } 
+                    # support both ad\username and username@ad
+                    if ($username -like "*\*" -or $username -like "*@*") {
+                        if ($username -like "*\*") {
+                            $domain, $login = $username.Split("\")
+                            if ($domain) {
+                                $formatteduser = "$login@$domain"
+                            }
+                            else {
+                                $formatteduser = $username.Split("\")[1]
+                            }
+                        }
+                        else {
+                            $formatteduser = $SqlCredential.UserName
+                        }
 
-        }
-        catch {
-            Write-Debug -Message $_.Exception
-            Write-Host $_.Exception.Message -ForegroundColor Yellow  
-        }
-    }
-    End {        
-        Write-Verbose "The disconnect connection with $ServerInstance"
-        try {
-            if ($connectsqlserver.ConnectionContext.IsOpen -eq $true) {
-                $connectsqlserver.ConnectionContext.Disconnect()
-            }
-        }
-        catch {
-            Write-Host $_.Exception.Message -ForegroundColor Yellow         
-        }
-    }
-}
-
-
-function Get-SQLServerVersion2 {
-    [CmdletBinding()]
-    Param
-    (
-        # Param1 help description
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [string]$ServerInstance
-    )
-
-    Begin { 
-    
-    }
-    Process {
-        try { 
-            
-            $connectsqlserver = New-Object Microsoft.SqlServer.Management.Smo.Server $ServerInstance
-            $connectsqlserver.ConnectionContext.ApplicationName = "DBA PowerShell App"
-            $connectsqlserver.ConnectionContext.ConnectTimeout = 10
-
-            Write-Verbose "Connect to server $ServerInstance"
-            if ($connectsqlserver.ConnectionContext.IsOpen -eq $false) {
-
-                Write-Verbose "ConnectionString:$($connectsqlserver.ConnectionContext)"
-                $connectsqlserver.ConnectionContext.LoginSecure = $true
+                        $connectsqlserver.ConnectionContext.LoginSecure = $true
+                        $connectsqlserver.ConnectionContext.ConnectAsUser = $true
+                        $connectsqlserver.ConnectionContext.ConnectAsUserName = $formatteduser
+                        $connectsqlserver.ConnectionContext.ConnectAsUserPassword = ($SqlCredential).GetNetworkCredential().Password
+                    }
+                    else {
+                        $connectsqlserver.ConnectionContext.LoginSecure = $false
+                        $connectsqlserver.ConnectionContext.set_Login($username)
+                        $connectsqlserver.ConnectionContext.set_SecurePassword($SqlCredential.Password)
+                    }
+                }
+                else {
+                    
+                    $connectsqlserver.ConnectionContext.LoginSecure = $true
+                }
+                Write-Verbose "[Get-SqlServerVersion] ConnectionString:$($connectsqlserver.ConnectionContext)"
                 $connectsqlserver.ConnectionContext.Connect()
             }
 
