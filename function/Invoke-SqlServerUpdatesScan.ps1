@@ -97,7 +97,7 @@ function Invoke-SqlServerUpdatesScan {
             Position = 1, 
             ParameterSetName = 'Version')]
         [string]$BuildNumber,
-        [string]$SqlCredential
+        [PSCredential]$SqlCredential
         #Return report HTML
     )
     Begin {
