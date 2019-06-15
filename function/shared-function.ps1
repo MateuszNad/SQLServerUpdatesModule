@@ -55,7 +55,7 @@ function Get-SQLServerVersion {
             Write-Verbose "Connect to server $ServerInstance"
             if ($connectsqlserver.ConnectionContext.IsOpen -eq $false) {
 
-                if ($null -ne $SqlCredential.UserName) {
+                if ($null -ne $SqlCredential) {
                     $username = ($SqlCredential.UserName).TrimStart("\")
 
                     # support both ad\username and username@ad
@@ -85,7 +85,6 @@ function Get-SQLServerVersion {
                     }
                 }
                 else {
-                    
                     $connectsqlserver.ConnectionContext.LoginSecure = $true
                 }
                 Write-Verbose "[Get-SqlServerVersion] ConnectionString:$($connectsqlserver.ConnectionContext)"
