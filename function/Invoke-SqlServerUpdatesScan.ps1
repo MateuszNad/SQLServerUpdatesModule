@@ -121,7 +121,7 @@ function Invoke-SqlServerUpdatesScan {
         #Return report HTML
     )
     Begin {
-        $ErrorActionPreference = 'Stop'
+        $ErrorActionPreference = 'Continue'
         $fnName = '[Invoke-SqlServerUpdatesScan]'
         if ($BuildNumber) {
             #Create new object
@@ -224,11 +224,11 @@ function Invoke-SqlServerUpdatesScan {
                 if (([version]$Instance.Build -ge [version]$UpdatesList[0].Build) -or ($UpdatesList[0].Build -eq "") -and ($UpdatesList[0].Build -ne "various")) {
                     $update = [pscustomobject]@{
                         PSTypeName       = 'SqlServerUpdates.Update'
-                        CumulativeUpdate = $UpdatesServer[0].CumulativeUpdate
-                        ReleaseDate      = $UpdatesServer[0].ReleaseDate
-                        Build            = $UpdatesServer[0].Build
-                        SupportEnds      = $UpdatesServer[0].SupportEnds
-                        ServicePack      = $UpdatesServer[0].ServicePack
+                        CumulativeUpdate = $UpdateList[0].CumulativeUpdate
+                        ReleaseDate      = $UpdateList[0].ReleaseDate
+                        Build            = $UpdateList[0].Build
+                        SupportEnds      = $UpdateList[0].SupportEnds
+                        ServicePack      = $UpdateList[0].ServicePack
                     }
                     Add-Member -InputObject $update -MemberType ScriptMethod  -Name ToString -Force -Value { $this.Build }
 

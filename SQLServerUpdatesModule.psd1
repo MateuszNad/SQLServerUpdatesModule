@@ -46,7 +46,7 @@
     Copyright              = 'mnadobnik.pl'
 	
     # Description of the functionality provided by this module
-    Description            = 'The module can parse information about updates with http://sqlserverupdates.com/. Next, it checks build number instance SQL Server in organization (mandatory parameter) and it will return updates required for installation. Script returns objects or report in html format.'
+    Description            = 'The module can parse information about updates with http://sqlserverupdates.com/. Next, it checks build number instance SQL Server in organization (mandatory parameter) and it will return updates required for installation. The script returns objects or report in html format.'
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion      = '4.0'
