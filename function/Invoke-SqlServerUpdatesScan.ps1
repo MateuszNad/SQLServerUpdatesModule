@@ -187,15 +187,17 @@ function Invoke-SqlServerUpdatesScan {
 
             #Create custome object
             $ServerObj = [PSCustomObject]@{
-                PSTypeName   = 'SqlServerUpdates.Instance'
-                Name         = $Instance.Name
-                Product      = $Instance.Product
-                VersionName  = $Instance.VersionName
-                Edition      = $Instance.Edition
-                ProductLevel = $Instance.ProductLevel
-                Build        = $Instance.Build
-                Updates      = ""
-                ToUpdate     = $false
+                PSTypeName       = 'SqlServerUpdates.Instance'
+                Name             = $Instance.Name
+                Product          = $Instance.Product
+                VersionName      = $Instance.VersionName
+                Edition          = $Instance.Edition
+                ProductLevel     = $Instance.ProductLevel
+                Build            = $Instance.Build
+                LatestUpdate     = ""
+                LatestUpdateLink = ""
+                Updates          = ""
+                ToUpdate         = $false
             }
 
 
@@ -266,6 +268,8 @@ function Invoke-SqlServerUpdatesScan {
                     }
                     $ServerObj.Updates = $UpdatesObj
                     $ServerObj.ToUpdate = $true
+                    $ServerObj.LatestUpdate = $UpdatesObj[0].Build
+                    $ServerObj.LatestUpdateLink = $UpdatesObj[0].CumulativeUpdate
                 }
                 $ServerObj
                 #$ObjAllSserversWithUpdates += $ObjServer

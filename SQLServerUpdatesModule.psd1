@@ -23,6 +23,7 @@
           1.1.0.1 - Added parameter - SqlCredential to Get-SqlServerVersion
           1.1.0.2 - Added SqlCredential to Invoke-SqlServerUpdatesScan
           1.1.0.3 - Support for PowerShell 6 (and PowerShell 7 preview)
+          1.1.0.4 - Added properties to SqlServerUpdates.Instance object
 #>
 
 @{
@@ -31,7 +32,7 @@
     RootModule             = 'SQLServerUpdatesModule.psm1'
 	
     # Version number of this module.
-    ModuleVersion          = '1.1.0.3'
+    ModuleVersion          = '1.1.0.4'
 	
     # ID used to uniquely identify this module
     GUID                   = '9fde4b8f-637b-4a3a-ac62-5235c875dc30'
