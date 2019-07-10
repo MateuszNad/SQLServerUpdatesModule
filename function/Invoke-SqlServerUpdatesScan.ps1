@@ -140,7 +140,7 @@ function Invoke-SqlServerUpdatesScan {
                 $UpdateList = Get-SQLServerUpdates -Version $ServerInstance.VersionName
             }
             catch {
-                Write-Host $_.Exception.Message
+                Write-Output $_.Exception.Message
                 exit 1
             }
         }
@@ -221,16 +221,20 @@ function Invoke-SqlServerUpdatesScan {
             if ([int]($Instance.VersionMajor) -ge 9) {
                 Write-Debug "[[int]($($Instance.VersionMajor)) -ge 9]:true" 
                 $UpdatesList = $UpdateList | Where-Object Name -eq $Instance.VersionName
+
+                if ($UpdatesList[0].Build -eq "") {
+                    $UpdatesList[0].Build = $UpdatesList[1].Build
+                }
                 
                 # if SQL Server is latest Version       
-                if (([version]$Instance.Build -ge [version]$UpdatesList[0].Build) -or ($UpdatesList[0].Build -eq "") -and ($UpdatesList[0].Build -ne "various")) {
+                if (([version]$Instance.Build -ge [version]$UpdatesList[0].Build) -and ($UpdatesList[0].Build -ne "various")) {
                     $update = [pscustomobject]@{
                         PSTypeName       = 'SqlServerUpdates.Update'
-                        CumulativeUpdate = $UpdateList[0].CumulativeUpdate
-                        ReleaseDate      = $UpdateList[0].ReleaseDate
-                        Build            = $UpdateList[0].Build
-                        SupportEnds      = $UpdateList[0].SupportEnds
-                        ServicePack      = $UpdateList[0].ServicePack
+                        CumulativeUpdate = $UpdatesList[0].CumulativeUpdate
+                        ReleaseDate      = $UpdatesList[0].ReleaseDate
+                        Build            = $UpdatesList[0].Build
+                        SupportEnds      = $UpdatesList[0].SupportEnds
+                        ServicePack      = $UpdatesList[0].ServicePack
                     }
                     Add-Member -InputObject $update -MemberType ScriptMethod  -Name ToString -Force -Value { $this.Build }
 

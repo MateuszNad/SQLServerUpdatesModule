@@ -77,7 +77,7 @@ function Get-SQLServerUpdates {
             $content = $parser.ParseDocument($html);
         }
         catch {
-            Write-Host "Check connection..."
+            Write-Output "Check connection..."
 
             Write-Warning $_.Exception.Message
             Break

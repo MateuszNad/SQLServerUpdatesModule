@@ -97,7 +97,7 @@ function Get-SQLServerVersion {
         }
         catch {
             Write-Debug -Message $_.Exception
-            Write-Host $_.Exception.Message -ForegroundColor Yellow  
+            Write-Output $_.Exception.Message -ForegroundColor Yellow  
         }
     }
     End {        
@@ -108,7 +108,7 @@ function Get-SQLServerVersion {
             }
         }
         catch {
-            Write-Host $_.Exception.Message -ForegroundColor Yellow         
+            Write-Output $_.Exception.Message -ForegroundColor Yellow         
         }
     }
 }
