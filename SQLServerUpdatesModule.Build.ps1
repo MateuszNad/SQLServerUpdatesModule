@@ -1,6 +1,6 @@
 #ask . InstallDependencies, Analyze, Test, UpdateVersion #, Clean, Archive
 
-task . InstallDependencies, Analyze, UpdateVersion
+task . UpdateVersion, Publish
 
 
 task InstallDependencies {
@@ -69,7 +69,7 @@ task Clean {
 }
 
 task Publish {
-    Publish-Module -Name SqlServerUpdatesModule -NuGetApiKey $env:NuGetApiKey -Verbose
+    Publish-Module -Path $BuildRoot -NuGetApiKey $env:NuGetApiKey -Verbose
 }
 
 task LocalPublish {

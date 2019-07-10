@@ -32,7 +32,7 @@
     RootModule             = 'SQLServerUpdatesModule.psm1'
 	
     # Version number of this module.
-    ModuleVersion          = '1.1.0.4'
+    ModuleVersion = '1.1.1.4'
 	
     # ID used to uniquely identify this module
     GUID                   = '9fde4b8f-637b-4a3a-ac62-5235c875dc30'
@@ -144,6 +144,8 @@
         } 
     }
 }
+
+
 
 
 
