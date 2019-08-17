@@ -108,6 +108,7 @@ function Show-SQLServerUpdatesReport {
     [CmdletBinding()]
     [Alias()]
     [OutputType([string])]
+    [Obsolete('[Show-SQLServerUpdatesReport] Using the function Show-SQLServerUpdatesReport is deprecated. This function will be removed in version 2.0.0.0 or before, use Invoke-SqlServerUpdatesScan and Export-SqlServerUpdatesScan instead.')]
     Param
     (
         #The SQL Server instance
@@ -133,7 +134,7 @@ function Show-SQLServerUpdatesReport {
             $pathAttribute.Mandatory = $true
  
             #create an attributecollection object for the attribute we just created.
-            $attributeCollection = new-object System.Collections.ObjectModel.Collection[System.Attribute]
+            $attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
  
             #add our custom attribute
             $attributeCollection.Add($pathAttribute)
@@ -148,8 +149,6 @@ function Show-SQLServerUpdatesReport {
         }
     }
     Begin {
-        Write-Warning "[Show-SQLServerUpdatesReport] Using the function Show-SQLServerUpdatesReport is deprecated. This function will be removed in version 2.0.0.0 or before, use Invoke-SqlServerUpdatesScan and Export-SqlServerUpdatesScan instead." -Verbose
-        Write-Warning "[Show-SQLServerUpdatesReport] For example: Invoke-SqlServerUpdatesScan -ServerInstance IT-MN-M | Export-SqlServerUpdatesScan -File C:\report-updates.html"
         #Variables
         [array]$ObjAllSserversWithUpdates = @()
 

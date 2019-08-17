@@ -84,3 +84,12 @@ task Archive {
     Compress-Archive -Path .\DSCClassResources -Update -DestinationPath "$Artifacts\$ModuleName.zip"
     Compress-Archive -Path .\Examples -Update -DestinationPath "$Artifacts\$ModuleName.zip"
 }#>
+
+
+task Reimport {
+    $ModuleName = Split-Path -Path $BuildRoot -Leaf
+    if (Get-Module -Name $ModuleName) {
+        Remove-Module $ModuleName
+    }
+    Import-Module $BuildRoot
+}

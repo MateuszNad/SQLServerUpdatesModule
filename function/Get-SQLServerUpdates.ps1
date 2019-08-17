@@ -2,7 +2,7 @@
 # https://github.com/AngleSharp/AngleSharp
 # https://github.com/AngleSharp/AngleSharp/blob/master/doc/Basics.md
 
-function Get-SQLServerUpdates {
+function Get-SQLServerUpdate {
     <#
 .Synopsis
     Returns available update list for SQl Server
@@ -51,7 +51,7 @@ function Get-SQLServerUpdates {
           1.1.0.2 - Added SqlCredential
 #>
     [CmdletBinding()]
-    [Alias()]
+    [Alias('Get-SQLServerUpdates')]
     [OutputType([string])]
     Param
     (
@@ -94,13 +94,14 @@ function Get-SQLServerUpdates {
         }
         
         $VersionSQL = [ordered]@{
-            'SQL Server 2008'    = ($content.Links | Where-Object TextContent -like "SQL*2008?U*")
-            'SQL Server 2008 R2' = ($content.Links | Where-Object TextContent -like "SQL*2008?R2*")
-            'SQL Server 2012'    = ($content.Links | Where-Object TextContent -like "SQL*2012*")
-            'SQL Server 2014'    = ($content.Links | Where-Object TextContent -like "SQL*2014*")
-            'SQL Server 2016'    = ($content.Links | Where-Object TextContent -like "SQL*2016*")
-            'SQL Server 2017'    = ($content.Links | Where-Object TextContent -like "SQL*2017*")
+            'SQL Server 2008'    = ($content.Links | Where-Object Href -Match "sql-server-2008-updates*")[0]
+            'SQL Server 2008 R2' = ($content.Links | Where-Object Href -Match "sql-server-2008-r2-updates")[0]
+            'SQL Server 2012'    = ($content.Links | Where-Object Href -Match "sql-server-2012-updates")[0]
+            'SQL Server 2014'    = ($content.Links | Where-Object Href -Match "sql-server-2014-updates")[0]
+            'SQL Server 2016'    = ($content.Links | Where-Object Href -Match "sql-server-2016-updates")[0]
+            'SQL Server 2017'    = ($content.Links | Where-Object Href -Match "sql-server-2017-updates")[0]
         }
+
         # if set parameter -Version
         if ($Version) {
             $VersionSQL = [ordered]@{
