@@ -1,5 +1,6 @@
 ﻿#Requires -Version 4.0
-function Invoke-SqlServerUpdatesScan {
+function Invoke-SqlServerUpdatesScan
+{
     <#
 .Synopsis
    Returns information about deficit of installed updates at instance SQL Server.
@@ -120,166 +121,200 @@ function Invoke-SqlServerUpdatesScan {
         [PSCredential]$SqlCredential
         #Return report HTML
     )
-    Begin {
+    Begin
+    {
         $ErrorActionPreference = 'Continue'
         $fnName = '[Invoke-SqlServerUpdatesScan]'
-        if ($BuildNumber) {
-            #Create new object
-            #$BuildNumber = '14.0.1000.16'
-            $ServerInstance = [PSCustomObject]@{ 
-                Name         = ''
-                Product      = ''
-                Edition      = ''
-                ProductLevel = ''
-                VersionMajor = ([version]$BuildNumber).Major
-                Build        = $BuildNumber
-                VersionName  = Get-SQLServerFullName ([version]$BuildNumber).Major
-            }
-            try {
+        if ($BuildNumber)
+        {
+            try
+            {
+                #Create new object
+                #$BuildNumber = '14.0.1000.16'
+                $ServerInstance = [PSCustomObject]@{ 
+                    Name         = ''
+                    Product      = ''
+                    Edition      = ''
+                    ProductLevel = ''
+                    VersionMajor = ([version]$BuildNumber).Major
+                    Build        = $BuildNumber
+                    VersionName  = Get-SQLServerFullName ([version]$BuildNumber).Major
+                }
+            
                 Write-Verbose "$fnName Get update list for $($ServerInstance.VersionName)" 
                 $UpdateList = Get-SQLServerUpdates -Version $ServerInstance.VersionName
             }
-            catch {
+            catch
+            {
                 Write-Output $_.Exception.Message
                 exit 1
             }
         }
-        else {
-            try {
+        else
+        {
+            try
+            {
                 Write-Verbose "Get update list for all SQL Server"
                 $UpdateList = Get-SQLServerUpdates
             }
-            catch {
+            catch
+            {
                 Write-Warning $_.Exception.Message
                 exit 1
             }
         }
     }
 
-    Process {
-        foreach ($SqlInstance in $ServerInstance) {
-            #Clear variables
-            $ServerObj = @()
-            $UpdatesObj = @()
+    Process
+    {
 
-            if (-not $BuildNumber) {  
-                Write-Debug "[if (-not $BuildNumber)]:true"
-                Write-Verbose "Run:Get-SQLServerVersion, Parameters :-ServerInstance $SqlInstance"
-                if ($SqlCredential) {
-                    $Instance = Get-SQLServerVersion -ServerInstance $SqlInstance -SqlCredential $SqlCredential
+        foreach ($SqlInstance in $ServerInstance)
+        {
+            try
+            {
+                #Clear variables
+                $ServerObj = @()
+                $UpdatesObj = @()
+
+                if (-not $BuildNumber)
+                {  
+                    Write-Debug "[if (-not $BuildNumber)]:true"
+                    Write-Verbose "Run:Get-SQLServerVersion, Parameters :-ServerInstance $SqlInstance"
+                    if ($SqlCredential)
+                    {
+                        $Instance = Get-SQLServerVersion -ServerInstance $SqlInstance -SqlCredential $SqlCredential
+                    }
+                    else
+                    {
+                        $Instance = Get-SQLServerVersion -ServerInstance $SqlInstance
+                    }
+
+                    Write-Verbose "Result:Get-SQLServerVersion $Instance"
                 }
-                else {
-                    $Instance = Get-SQLServerVersion -ServerInstance $SqlInstance
+                else
+                {
+                    Write-Debug "[if (-not $BuildNumber)]:false"
+                    Write-Verbose "$SqlInstance"
+                    $Instance = $SqlInstance
                 }
 
-                Write-Verbose "Result:Get-SQLServerVersion $Instance"
-            }
-            else {
-                Write-Debug "[if (-not $BuildNumber)]:false"
-                Write-Verbose "$SqlInstance"
-                $Instance = $SqlInstance
-            }
+                if ([int]($Instance.VersionMajor) -le 8)
+                {
+                    Write-Debug "[if ($($Instance.VersionMajor) -le 8)]:true" 
+                    Write-Warning "Problem with connect or checked you server with SQL Server 2005 and earlier version"
+                } 
 
-            if ([int]($Instance.VersionMajor) -le 8) {
-                Write-Debug "[if ($($Instance.VersionMajor) -le 8)]:true" 
-                Write-Warning "Problem with connect or checked you server with SQL Server 2005 and earlier version"
-            } 
-
-            #Create custome object
-            $ServerObj = [PSCustomObject]@{
-                PSTypeName       = 'SqlServerUpdates.Instance'
-                Name             = $Instance.Name
-                Product          = $Instance.Product
-                VersionName      = $Instance.VersionName
-                Edition          = $Instance.Edition
-                ProductLevel     = $Instance.ProductLevel
-                Build            = $Instance.Build
-                LatestUpdate     = ""
-                LatestUpdateLink = ""
-                Updates          = ""
-                ToUpdate         = $false
-            }
-
-
-            # If check updates for SQL Server 2005
-            if ([int]($Instance.VersionMajor) -eq 9) {
-                Write-Debug "[[int]($($Instance.VersionMajor)) -eq 9]:true" 
-                $update = [PSCustomObject]@{
-                    PSTypeName       = 'SqlServerUpdates.Update'
-                    CumulativeUpdate = ""
-                    ReleaseDate      = "2012/10/09"
-                    Build            = "9.00.5324"
-                    SupportEnds      = "2016/04/12 – out of support"
-                    ServicePack      = ""
+                #Create custome object
+                $ServerObj = [PSCustomObject]@{
+                    PSTypeName       = 'SqlServerUpdates.Instance'
+                    Name             = $Instance.Name
+                    Product          = $Instance.Product
+                    VersionName      = $Instance.VersionName
+                    Edition          = $Instance.Edition
+                    ProductLevel     = $Instance.ProductLevel
+                    Build            = $Instance.Build
+                    LatestUpdate     = ""
+                    LatestUpdateLink = ""
+                    Updates          = ""
+                    ToUpdate         = $false
                 }
-                Add-Member -InputObject $update -MemberType ScriptMethod  -Name ToString -Force -Value { $this.Build }
 
-                $ServerObj.Updates = $update
-                $ServerObj.ToUpdate = $true
-            }
 
-            if ([int]($Instance.VersionMajor) -ge 9) {
-                Write-Debug "[[int]($($Instance.VersionMajor)) -ge 9]:true" 
-                $UpdatesList = $UpdateList | Where-Object Name -eq $Instance.VersionName
-
-                if ($UpdatesList[0].Build -eq "") {
-                    $UpdatesList[0].Build = $UpdatesList[1].Build
-                }
-                
-                # if SQL Server is latest Version       
-                if (([version]$Instance.Build -ge [version]$UpdatesList[0].Build) -and ($UpdatesList[0].Build -ne "various")) {
-                    $update = [pscustomobject]@{
+                # If check updates for SQL Server 2005
+                if ([int]($Instance.VersionMajor) -eq 9)
+                {
+                    Write-Debug "[[int]($($Instance.VersionMajor)) -eq 9]:true" 
+                    $update = [PSCustomObject]@{
                         PSTypeName       = 'SqlServerUpdates.Update'
-                        CumulativeUpdate = $UpdatesList[0].CumulativeUpdate
-                        ReleaseDate      = $UpdatesList[0].ReleaseDate
-                        Build            = $UpdatesList[0].Build
-                        SupportEnds      = $UpdatesList[0].SupportEnds
-                        ServicePack      = $UpdatesList[0].ServicePack
+                        CumulativeUpdate = ""
+                        ReleaseDate      = "2012/10/09"
+                        Build            = "9.00.5324"
+                        SupportEnds      = "2016/04/12 – out of support"
+                        ServicePack      = ""
                     }
                     Add-Member -InputObject $update -MemberType ScriptMethod  -Name ToString -Force -Value { $this.Build }
 
                     $ServerObj.Updates = $update
-
-                    if ([version]$Instance.Build -ge [version]$UpdatesList[0].Build) {
-                        Write-Verbose "Setting property: ToUpdate = false"
-                        $ServerObj.ToUpdate = $false
-                    }
-                    else {
-                        Write-Verbose "Setting property: ToUpdate = true"
-                        $ServerObj.ToUpdate = $true
-                    }
+                    $ServerObj.ToUpdate = $true
                 }
-                else {
-                    foreach ($Update in $UpdatesList) {
-                        $outParse = $null
-                        if ([Version]::TryParse($Update.Build, [ref]$outParse)) {
-                            if ($Update.Build -ne "various") {
-                                Write-Debug "[if ($($Update.Build) -ne 'various')]:true"
-                                if ([version]$Instance.Build -lt [version]$Update.Build) {
-                                    $update = [PSCustomObject]@{
-                                        CumulativeUpdate = $Update.CumulativeUpdate
-                                        ReleaseDate      = $Update.ReleaseDate
-                                        Build            = $Update.Build
-                                        SupportEnds      = $Update.SupportEnds
-                                        ServicePack      = $Update.ServicePack 
-                                    }
-                                    Add-Member -InputObject $update -MemberType ScriptMethod  -Name ToString -Force -Value { $this.Build }
 
-                                    $UpdatesObj += $update
+                if ([int]($Instance.VersionMajor) -ge 9)
+                {
+                    Write-Debug "[[int]($($Instance.VersionMajor)) -ge 9]:true" 
+                    $UpdatesList = $UpdateList | Where-Object Name -eq $Instance.VersionName
+
+                    if ($UpdatesList[0].Build -eq "")
+                    {
+                        $UpdatesList[0].Build = $UpdatesList[1].Build
+                    }
+                
+                    # if SQL Server is latest Version       
+                    if (([version]$Instance.Build -ge [version]$UpdatesList[0].Build) -and ($UpdatesList[0].Build -ne "various"))
+                    {
+                        $update = [pscustomobject]@{
+                            PSTypeName       = 'SqlServerUpdates.Update'
+                            CumulativeUpdate = $UpdatesList[0].CumulativeUpdate
+                            ReleaseDate      = $UpdatesList[0].ReleaseDate
+                            Build            = $UpdatesList[0].Build
+                            SupportEnds      = $UpdatesList[0].SupportEnds
+                            ServicePack      = $UpdatesList[0].ServicePack
+                        }
+                        Add-Member -InputObject $update -MemberType ScriptMethod  -Name ToString -Force -Value { $this.Build }
+
+                        $ServerObj.Updates = $update
+
+                        if ([version]$Instance.Build -ge [version]$UpdatesList[0].Build)
+                        {
+                            Write-Verbose "Setting property: ToUpdate = false"
+                            $ServerObj.ToUpdate = $false
+                        }
+                        else
+                        {
+                            Write-Verbose "Setting property: ToUpdate = true"
+                            $ServerObj.ToUpdate = $true
+                        }
+                    }
+                    else
+                    {
+                        foreach ($Update in $UpdatesList)
+                        {
+                            $outParse = $null
+                            if ([Version]::TryParse($Update.Build, [ref]$outParse))
+                            {
+                                if ($Update.Build -ne "various")
+                                {
+                                    Write-Debug "[if ($($Update.Build) -ne 'various')]:true"
+                                    if ([version]$Instance.Build -lt [version]$Update.Build)
+                                    {
+                                        $update = [PSCustomObject]@{
+                                            CumulativeUpdate = $Update.CumulativeUpdate
+                                            ReleaseDate      = $Update.ReleaseDate
+                                            Build            = $Update.Build
+                                            SupportEnds      = $Update.SupportEnds
+                                            ServicePack      = $Update.ServicePack 
+                                        }
+                                        Add-Member -InputObject $update -MemberType ScriptMethod  -Name ToString -Force -Value { $this.Build }
+
+                                        $UpdatesObj += $update
+                                    }
                                 }
                             }
                         }
+                        $ServerObj.Updates = $UpdatesObj
+                        $ServerObj.ToUpdate = $true
+                        $ServerObj.LatestUpdate = $UpdatesObj[0].Build
+                        $ServerObj.LatestUpdateLink = $UpdatesObj[0].CumulativeUpdate
                     }
-                    $ServerObj.Updates = $UpdatesObj
-                    $ServerObj.ToUpdate = $true
-                    $ServerObj.LatestUpdate = $UpdatesObj[0].Build
-                    $ServerObj.LatestUpdateLink = $UpdatesObj[0].CumulativeUpdate
+                    $ServerObj
+                    #$ObjAllSserversWithUpdates += $ObjServer
                 }
-                $ServerObj
-                #$ObjAllSserversWithUpdates += $ObjServer
+            }
+            catch
+            {
+                Write-Warning "[$SqlInstance] Connection failed"
+                Write-Warning $PSItem
             }
         }
     }
     End { }
 }
-
