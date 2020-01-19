@@ -8,11 +8,11 @@
 .EXAMPLE
    Another example of how to use this cmdlet
 .LINK
-   Author: Mateusz Nadobnik 
+   Author: Mateusz Nadobnik
    Link: mnadobnik.pl
    Date: 16.07.2017
    Version: 1.0.0.9
-    
+
    Keywords: Shared function, Version, SQL Server
    Notes: 1.0.0.4 - Without change.
           1.0.0.6 - Repaired syntax
@@ -20,8 +20,10 @@
           1.1.0.1 - Added parameter - SqlCredential
 #>
 
-Function Get-SQLServerFullName($param) {
-    switch ($param) {
+Function Get-SQLServerFullName($param)
+{
+    switch ($param)
+    {
         9 { return "SQL Server 2005" }
         10 { return "SQL Server 2008" }
         10.50 { return "SQL Server 2008 R2" }
@@ -32,7 +34,8 @@ Function Get-SQLServerFullName($param) {
     }
 }
 
-function Get-SQLServerVersion {
+function Get-SQLServerVersion
+{
     [CmdletBinding()]
     Param
     (
@@ -43,33 +46,43 @@ function Get-SQLServerVersion {
         [PSCredential]$SqlCredential
     )
 
-    Begin { 
-    
+    Begin
+    {
+
     }
-    Process {
-        try { 
+    Process
+    {
+        try
+        {
             $connectsqlserver = New-Object Microsoft.SqlServer.Management.Smo.Server $ServerInstance
             $connectsqlserver.ConnectionContext.ApplicationName = "SqlServerUpdatesModule"
             $connectsqlserver.ConnectionContext.ConnectTimeout = 10
 
             Write-Verbose "Connect to server $ServerInstance"
-            if ($connectsqlserver.ConnectionContext.IsOpen -eq $false) {
+            if ($connectsqlserver.ConnectionContext.IsOpen -eq $false)
+            {
 
-                if ($null -ne $SqlCredential) {
+                if ($null -ne $SqlCredential)
+                {
                     $username = ($SqlCredential.UserName).TrimStart("\")
 
                     # support both ad\username and username@ad
-                    if ($username -like "*\*" -or $username -like "*@*") {
-                        if ($username -like "*\*") {
+                    if ($username -like "*\*" -or $username -like "*@*")
+                    {
+                        if ($username -like "*\*")
+                        {
                             $domain, $login = $username.Split("\")
-                            if ($domain) {
+                            if ($domain)
+                            {
                                 $formatteduser = "$login@$domain"
                             }
-                            else {
+                            else
+                            {
                                 $formatteduser = $username.Split("\")[1]
                             }
                         }
-                        else {
+                        else
+                        {
                             $formatteduser = $SqlCredential.UserName
                         }
 
@@ -78,37 +91,44 @@ function Get-SQLServerVersion {
                         $connectsqlserver.ConnectionContext.ConnectAsUserName = $formatteduser
                         $connectsqlserver.ConnectionContext.ConnectAsUserPassword = ($SqlCredential).GetNetworkCredential().Password
                     }
-                    else {
+                    else
+                    {
                         $connectsqlserver.ConnectionContext.LoginSecure = $false
                         $connectsqlserver.ConnectionContext.set_Login($username)
                         $connectsqlserver.ConnectionContext.set_SecurePassword($SqlCredential.Password)
                     }
                 }
-                else {
+                else
+                {
                     $connectsqlserver.ConnectionContext.LoginSecure = $true
                 }
                 Write-Verbose "[Get-SqlServerVersion] ConnectionString:$($connectsqlserver.ConnectionContext)"
                 $connectsqlserver.ConnectionContext.Connect()
             }
 
-            $connectsqlserver | Select-Object Name, Product, Edition, ProductLevel, VersionMajor, 
-            @{L = "VersionName"; E = { Get-SQLServerFullName $_.versionmajor } }, @{L = "Build"; E = { $_.VersionString } } 
+            $connectsqlserver | Select-Object Name, Product, Edition, ProductLevel, VersionMajor,
+            @{L = "VersionName"; E = { Get-SQLServerFullName $_.versionmajor } }, @{L = "Build"; E = { $_.VersionString } }
 
         }
-        catch {
+        catch
+        {
             Write-Debug -Message $_.Exception
-            Write-Output $_.Exception.Message -ForegroundColor Yellow  
+            Write-Output $_.Exception.Message -ForegroundColor Yellow
         }
     }
-    End {        
+    End
+    {
         Write-Verbose "The disconnect connection with $ServerInstance"
-        try {
-            if ($connectsqlserver.ConnectionContext.IsOpen -eq $true) {
+        try
+        {
+            if ($connectsqlserver.ConnectionContext.IsOpen -eq $true)
+            {
                 $connectsqlserver.ConnectionContext.Disconnect()
             }
         }
-        catch {
-            Write-Output $_.Exception.Message -ForegroundColor Yellow         
+        catch
+        {
+            Write-Output $_.Exception.Message -ForegroundColor Yellow
         }
     }
 }

@@ -1,7 +1,43 @@
-#ask . InstallDependencies, Analyze, Test, UpdateVersion #, Clean, Archive
+param (
+    [Parameter(Mandatory = $false)]
+    [string]$ModuleName,
+    [Parameter(Mandatory = $false)]
+    [ValidateSet('Development', 'Production')]
+    $Configuration = 'Development'
 
-task . UpdateVersion, Publish
+)
 
+# Default
+task . RemoveImport
+
+#task . InstallDependencies, Analyze, Test, UpdateVersion #, Clean, Archive
+task Publish UpdateVersion, Publish
+
+if (-not ($PSBoundParameters.ModuleName))
+{
+    $ModuleName = Split-Path -Path $BuildRoot -Leaf
+}
+
+task TestModuleName {
+    Write-Output $ModuleName
+}
+
+task RemoveImport {
+    if (Get-Module $ModuleName)
+    {
+        Remove-Module -Name $ModuleName
+    }
+    Import-Module $BuildRoot
+}
+
+task CheckFunction {
+    $Manifest = Test-ModuleManifest -Path ".\$ModuleName.psd1"
+    $BaseName = (Get-ChildItem -Path  '.\public').BaseName
+
+
+    $BaseName | Where-Object { $Manifest.ExportedCommands.Values.Name -notcontains $_ }
+    ",'{0}'" -f (($BaseName | Where-Object { $Manifest.ExportedCommands.Values.Name -notcontains $_ }) -join "','") | Clip
+}
 
 task InstallDependencies {
     Install-Module Pester -Force
@@ -19,7 +55,8 @@ task Analyze {
 
     $saResults = Invoke-ScriptAnalyzer @scriptAnalyzerParams
 
-    if ($saResults) {
+    if ($saResults)
+    {
         $saResults | Format-Table
         throw "One or more PSScriptAnalyzer errors/warnings where found."
     }
@@ -41,18 +78,20 @@ task Test {
 }
 
 task UpdateVersion {
-    try {
+    try
+    {
         $moduleManifestFile = ((($BuildFile -split '\\')[-1] -split '\.')[0] + '.psd1')
         $manifestContent = Get-Content $moduleManifestFile -Raw
         [version]$version = [regex]::matches($manifestContent, "ModuleVersion\s*=\s*\'(?<version>(\d+\.)?(\d+\.)?(\d+\.)?(\*|\d+))'") | ForEach-Object { $_.groups['version'].value }
         $newVersion = "{0}.{1}.{2}.{3}" -f $version.Major, $version.Minor, ($version.Build + 1), $version.Revision
 
-        $replacements = "ModuleVersion = '$newVersion'"            
+        $replacements = "ModuleVersion = '$newVersion'"
         $manifestContent = $manifestContent -replace "ModuleVersion\s*=\s*\'(?<version>(\d+\.)?(\d+\.)?(\d+\.)?(\*|\d+))'", $replacements
 
         $manifestContent | Set-Content -Path "$BuildRoot\$moduleManifestFile"
     }
-    catch {
+    catch
+    {
         Write-Error -Message $_.Exception.Message
         $host.SetShouldExit($LastExitCode)
     }
@@ -60,8 +99,9 @@ task UpdateVersion {
 
 task Clean {
     $Artifacts = "$BuildRoot\Artifacts"
-    
-    if (Test-Path -Path $Artifacts) {
+
+    if (Test-Path -Path $Artifacts)
+    {
         Remove-Item "$Artifacts/*" -Recurse -Force
     }
 
@@ -88,7 +128,8 @@ task Archive {
 
 task Reimport {
     $ModuleName = Split-Path -Path $BuildRoot -Leaf
-    if (Get-Module -Name $ModuleName) {
+    if (Get-Module -Name $ModuleName)
+    {
         Remove-Module $ModuleName
     }
     Import-Module $BuildRoot

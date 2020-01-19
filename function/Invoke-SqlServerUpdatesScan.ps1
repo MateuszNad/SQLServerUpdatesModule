@@ -6,15 +6,15 @@ function Invoke-SqlServerUpdatesScan
    Returns information about deficit of installed updates at instance SQL Server.
 
 .DESCRIPTION
-    This command download information about the newest available updates for instance SQL Server. 
+    This command download information about the newest available updates for instance SQL Server.
     Next, it checks build number instance SQL Server in organization (mandatory parameter) and it will return updates required for installation.
 
     Show-SQLServerUpdatesReport can return report in HTML format.
-    
-    This function use Get-SQLServerUpdates for download information about availability updates for all edition SQL Server. 
-    Function Invoke-SqlServerUpdatesScan is a part of the module SQLServerUpdateModule. More about its function in help. 
 
-.NOTES 
+    This function use Get-SQLServerUpdates for download information about availability updates for all edition SQL Server.
+    Function Invoke-SqlServerUpdatesScan is a part of the module SQLServerUpdateModule. More about its function in help.
+
+.NOTES
     Author: Mateusz Nadobnik, [mnadobnik.pl]
     Requires: sysadmin access on SQL Servers
 
@@ -91,13 +91,13 @@ function Invoke-SqlServerUpdatesScan
 
 
 .LINK
-   Author: Mateusz Nadobnik 
+   Author: Mateusz Nadobnik
    Link: mnadobnik.pl
    Date: 14.05.2010
    Version: 1.1.0.0
-    
+
    Keywords: SQL Server, Updates, Get, Reports, Show
-   Notes: 
+   Notes:
 #>
 
     [CmdletBinding()]
@@ -114,8 +114,8 @@ function Invoke-SqlServerUpdatesScan
         $ServerInstance,
         #Build number SQL Server, example 13.0.4422.0
         [Parameter(Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true, 
-            Position = 1, 
+            ValueFromPipelineByPropertyName = $true,
+            Position = 1,
             ParameterSetName = 'Version')]
         [string]$BuildNumber,
         [PSCredential]$SqlCredential
@@ -129,9 +129,9 @@ function Invoke-SqlServerUpdatesScan
         {
             try
             {
-                #Create new object
-                #$BuildNumber = '14.0.1000.16'
-                $ServerInstance = [PSCustomObject]@{ 
+                # Create new object
+                # $BuildNumber = '14.0.1000.16'
+                $ServerInstance = [PSCustomObject]@{
                     Name         = ''
                     Product      = ''
                     Edition      = ''
@@ -140,8 +140,8 @@ function Invoke-SqlServerUpdatesScan
                     Build        = $BuildNumber
                     VersionName  = Get-SQLServerFullName ([version]$BuildNumber).Major
                 }
-            
-                Write-Verbose "$fnName Get update list for $($ServerInstance.VersionName)" 
+
+                Write-Verbose "$fnName Get update list for $($ServerInstance.VersionName)"
                 $UpdateList = Get-SQLServerUpdates -Version $ServerInstance.VersionName
             }
             catch
@@ -177,7 +177,7 @@ function Invoke-SqlServerUpdatesScan
                 $UpdatesObj = @()
 
                 if (-not $BuildNumber)
-                {  
+                {
                     Write-Debug "[if (-not $BuildNumber)]:true"
                     Write-Verbose "Run:Get-SQLServerVersion, Parameters :-ServerInstance $SqlInstance"
                     if ($SqlCredential)
@@ -200,9 +200,9 @@ function Invoke-SqlServerUpdatesScan
 
                 if ([int]($Instance.VersionMajor) -le 8)
                 {
-                    Write-Debug "[if ($($Instance.VersionMajor) -le 8)]:true" 
+                    Write-Debug "[if ($($Instance.VersionMajor) -le 8)]:true"
                     Write-Warning "Problem with connect or checked you server with SQL Server 2005 and earlier version"
-                } 
+                }
 
                 #Create custome object
                 $ServerObj = [PSCustomObject]@{
@@ -223,7 +223,7 @@ function Invoke-SqlServerUpdatesScan
                 # If check updates for SQL Server 2005
                 if ([int]($Instance.VersionMajor) -eq 9)
                 {
-                    Write-Debug "[[int]($($Instance.VersionMajor)) -eq 9]:true" 
+                    Write-Debug "[[int]($($Instance.VersionMajor)) -eq 9]:true"
                     $update = [PSCustomObject]@{
                         PSTypeName       = 'SqlServerUpdates.Update'
                         CumulativeUpdate = ""
@@ -240,15 +240,15 @@ function Invoke-SqlServerUpdatesScan
 
                 if ([int]($Instance.VersionMajor) -ge 9)
                 {
-                    Write-Debug "[[int]($($Instance.VersionMajor)) -ge 9]:true" 
+                    Write-Debug "[[int]($($Instance.VersionMajor)) -ge 9]:true"
                     $UpdatesList = $UpdateList | Where-Object Name -eq $Instance.VersionName
 
                     if ($UpdatesList[0].Build -eq "")
                     {
                         $UpdatesList[0].Build = $UpdatesList[1].Build
                     }
-                
-                    # if SQL Server is latest Version       
+
+                    # if SQL Server is latest Version
                     if (([version]$Instance.Build -ge [version]$UpdatesList[0].Build) -and ($UpdatesList[0].Build -ne "various"))
                     {
                         $update = [pscustomobject]@{
@@ -291,7 +291,7 @@ function Invoke-SqlServerUpdatesScan
                                             ReleaseDate      = $Update.ReleaseDate
                                             Build            = $Update.Build
                                             SupportEnds      = $Update.SupportEnds
-                                            ServicePack      = $Update.ServicePack 
+                                            ServicePack      = $Update.ServicePack
                                         }
                                         Add-Member -InputObject $update -MemberType ScriptMethod  -Name ToString -Force -Value { $this.Build }
 
