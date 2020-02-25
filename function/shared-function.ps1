@@ -31,10 +31,11 @@ Function Get-SQLServerFullName($param)
         12 { return "SQL Server 2014" }
         13 { return "SQL Server 2016" }
         14 { return "SQL Server 2017" }
+        15 { return "SQL Server 2019" }
     }
 }
 
-function Get-SQLServerVersion
+function Get-SqlServerVersion
 {
     [CmdletBinding()]
     Param

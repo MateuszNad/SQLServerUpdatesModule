@@ -2,7 +2,7 @@
 # https://github.com/AngleSharp/AngleSharp
 # https://github.com/AngleSharp/AngleSharp/blob/master/doc/Basics.md
 
-function Get-SQLServerUpdate
+function Get-SqlServerUpdate
 {
     <#
 .Synopsis
@@ -54,7 +54,7 @@ function Get-SQLServerUpdate
 
 #>
     [CmdletBinding()]
-    [Alias('Get-SQLServerUpdates')]
+    [Alias('Get-SqlServerUpdates')]
     [OutputType([string])]
     Param
     (
@@ -64,9 +64,11 @@ function Get-SQLServerUpdate
             'SQL Server 2012',
             'SQL Server 2014',
             'SQL Server 2016',
-            'SQL Server 2017')]
+            'SQL Server 2017',
+            'SQL Server 2019')]
         [string]$Version,
-        [switch]$Force
+        [switch]$Force,
+        [switch]$Offline
     )
 
     $ElapsedTime = [System.Diagnostics.Stopwatch]::StartNew()
@@ -87,6 +89,10 @@ function Get-SQLServerUpdate
     elseif ($Force.IsPresent)
     {
         $ReturnCachedData = $false
+    }
+    elseif ($Offline.IsPresent)
+    {
+        $ReturnCachedData = $true
     }
     else
     {
@@ -136,6 +142,7 @@ function Get-SQLServerUpdate
         'SQL Server 2014'    = 5
         'SQL Server 2016'    = 5
         'SQL Server 2017'    = 4
+        'SQL Server 2019'    = 3
     }
 
     $VersionSQL = [ordered]@{
@@ -145,6 +152,7 @@ function Get-SQLServerUpdate
         'SQL Server 2014'    = ($content.Links | Where-Object Href -Match "sql-server-2014-updates")[0]
         'SQL Server 2016'    = ($content.Links | Where-Object Href -Match "sql-server-2016-updates")[0]
         'SQL Server 2017'    = ($content.Links | Where-Object Href -Match "sql-server-2017-updates")[0]
+        'SQL Server 2019'    = ($content.Links | Where-Object Href -Match "sql-server-2019-updates")[0]
     }
     Write-Verbose ("{0};Links" -f $ElapsedTime.Elapsed)
 
@@ -232,6 +240,24 @@ function Get-SQLServerUpdate
 
                 $update.Build = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
                 $update.SupportEnds = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s|\?\?)", "").Trim()
+            }
+            elseif ($ColumnSetting.$SQL -eq 3)
+            {
+                $update.ServicePack = ''
+                $update.CumulativeUpdate = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", ""); $i++
+
+                $ReleaseDate = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s|\?\?)", "").Trim(); $i++
+                if ([datetime]::TryParse($ReleaseDate, [ref](Get-Date)))
+                {
+                    $update.ReleaseDate = [datetime]$ReleaseDate
+                }
+                else
+                {
+                    $update.ReleaseDate = [datetime]'0001/01/01'
+                }
+
+                $update.Build = (($tableUpdateTD[$i].innerHTML) -Replace "( &nbsp;|&nbsp;|^\s)", "")
+                $update.SupportEnds = ''
             }
 
             try

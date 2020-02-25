@@ -1,19 +1,20 @@
 ﻿#Requires -Version 4.0
-function Show-SQLServerUpdatesReport {
+function Show-SqlServerUpdatesReport
+{
     <#
 .Synopsis
    Returns information about deficit of installed updates at instance SQL Server.
 
 .DESCRIPTION
-    This command download information about the newest available updates for instance SQL Server. 
+    This command download information about the newest available updates for instance SQL Server.
     Next, it checks build number instance SQL Server in organization (mandatory parameter) and it will return updates required for installation.
 
     Show-SQLServerUpdatesReport can return report in HTML format.
-    
-    This function use Get-SQLServerUpdates for download information about availability updates for all edition SQL Server. 
-    Function Get-SQ ServerUpdates is a part of the module SQLServerUpdateModule. More about its function in help. 
 
-.NOTES 
+    This function use Get-SQLServerUpdates for download information about availability updates for all edition SQL Server.
+    Function Get-SQ ServerUpdates is a part of the module SQLServerUpdateModule. More about its function in help.
+
+.NOTES
     Author: Mateusz Nadobnik, mnadobnik.pl
     Requires: sysadmin access on SQL Servers
 
@@ -91,11 +92,11 @@ function Show-SQLServerUpdatesReport {
     Return information about deficit of installed updates for instances with parameter ServerInstance. This command returns report in the format html.
 
 .LINK
-   Author: Mateusz Nadobnik 
+   Author: Mateusz Nadobnik
    Link: mnadobnik.pl
    Date: 16.07.2017
    Version: 1.0.0.6
-    
+
    Keywords: SQL Server, Updates, Get, Reports, Show
    Notes: 1.0.0.4 - Without change.
           1.0.0.6 - issue repaired - HTML Report Has Duplicates the previous Servers available builds
@@ -120,53 +121,60 @@ function Show-SQLServerUpdatesReport {
         $ServerInstance,
         #Build number SQL Server, example 13.0.4422.0
         [Parameter(Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true, 
-            Position = 1, 
+            ValueFromPipelineByPropertyName = $true,
+            Position = 1,
             ParameterSetName = 'Version')]
         [string]$BuildNumber,
         #Return report HTML
         [switch]$HTML
     )
-    DynamicParam {
-        if ($HTML) {
+    DynamicParam
+    {
+        if ($HTML)
+        {
             #create a new ParameterAttribute Object
             $pathAttribute = New-Object System.Management.Automation.ParameterAttribute
             $pathAttribute.Mandatory = $true
- 
+
             #create an attributecollection object for the attribute we just created.
             $attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
- 
+
             #add our custom attribute
             $attributeCollection.Add($pathAttribute)
- 
+
             #add our paramater specifying the attribute collection
             $pathParam = New-Object System.Management.Automation.RuntimeDefinedParameter('Path', [string], $attributeCollection)
- 
+
             #expose the name of our parameter
             $paramDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
             $paramDictionary.Add('Path', $pathParam)
             return $paramDictionary
         }
     }
-    Begin {
+    Begin
+    {
         #Variables
         [array]$ObjAllSserversWithUpdates = @()
 
         #Check path to file with report
-        if ($HTML) {
+        if ($HTML)
+        {
             #Check path
-            if ($PSBoundParameters.Path -notmatch '[.]html') {
+            if ($PSBoundParameters.Path -notmatch '[.]html')
+            {
                 Write-Host "The path $($PSBoundParameters.Path) not contain file with extension html"
                 break
             }
 
-            if (-not (Test-Path (Split-Path -Path $PSBoundParameters.Path))) {
+            if (-not (Test-Path (Split-Path -Path $PSBoundParameters.Path)))
+            {
                 Write-Host "Not correct path. The directory $(Split-Path -Path $PSBoundParameters.Path) not exist."
                 break
             }
         }
-        
-        if ($BuildNumber) {
+
+        if ($BuildNumber)
+        {
             #Create new object
             $ServerInstance = @{ } | Select-Object VersionMajor, Build, VersionName
             $ServerInstance.Build = $BuildNumber
@@ -174,48 +182,58 @@ function Show-SQLServerUpdatesReport {
             #$ServerInstance.VersionName = Get-SQLServerVersion ([int]($BuildNumber.Split(".")[0]))
             $ServerInstance.VersionMajor = [int]($BuildNumber.Split(".")[0])
 
-            try {
-                Write-Verbose "Get update list for $($ServerInstance.VersionName)" 
+            try
+            {
+                Write-Verbose "Get update list for $($ServerInstance.VersionName)"
                 $UpdateList = Get-SQLServerUpdates -Version $ServerInstance.VersionName
             }
-            catch {
+            catch
+            {
                 Write-Host $_.Exception.Message
                 exit 1
             }
         }
-        else {
-            try {
+        else
+        {
+            try
+            {
                 Write-Verbose "Get update list for all SQL Server"
                 $UpdateList = Get-SQLServerUpdates
             }
-            catch {
+            catch
+            {
                 Write-Warning $_.Exception.Message
                 exit 1
             }
         }
     }
 
-    Process {
-        foreach ($SqlInstance in $ServerInstance) {
+    Process
+    {
+        foreach ($SqlInstance in $ServerInstance)
+        {
 
             #Clear variables
             $ObjServer = @()
             $ObjUpdates = @()
 
-            if (-not $BuildNumber) {  
+            if (-not $BuildNumber)
+            {
                 Write-Debug "[if (-not $BuildNumber)]:true"
                 Write-Verbose "Run:Get-SQLServerVersion, Parameters :-ServerInstance $SqlInstance"
                 $Instance = Get-SQLServerVersion -ServerInstance $SqlInstance
                 Write-Verbose "Result:Get-SQLServerVersion $Instance"
             }
-            else {
+            else
+            {
                 Write-Debug "[if (-not $BuildNumber)]:false"
                 Write-Verbose "$SqlInstance"
                 $Instance = $SqlInstance
             }
 
-            if ([int]($Instance.VersionMajor) -le 8) {
-                Write-Debug "[if ($($Instance.VersionMajor) -le 8)]:true" 
+            if ([int]($Instance.VersionMajor) -le 8)
+            {
+                Write-Debug "[if ($($Instance.VersionMajor) -le 8)]:true"
                 Write-Warning "Problem with connect or checked you server with SQL Server 2005 and earlier version"
             }
 
@@ -226,11 +244,12 @@ function Show-SQLServerUpdatesReport {
             $ObjServer.VersionName = $Instance.VersionName
             $ObjServer.Edition = $Instance.Edition
             $ObjServer.ProductLevel = $Instance.ProductLevel
-            $ObjServer.Build = $Instance.Build    
+            $ObjServer.Build = $Instance.Build
 
             # If check updates for SQL Server 2005
-            if ([int]($Instance.VersionMajor) -eq 9) {
-                Write-Debug "[[int]($($Instance.VersionMajor)) -eq 9]:true" 
+            if ([int]($Instance.VersionMajor) -eq 9)
+            {
+                Write-Debug "[[int]($($Instance.VersionMajor)) -eq 9]:true"
 
                 $ObjUpdate = @{ } | Select-Object CumulativeUpdate, ReleaseDate, Build, SupportEnds, ServicePack
                 $ObjUpdate.CumulativeUpdate = ""
@@ -243,44 +262,52 @@ function Show-SQLServerUpdatesReport {
                 $ObjServer.ToUpdate = $true
             }
 
-            if ([int]($Instance.VersionMajor) -ge 9) {
-                Write-Debug "[[int]($($Instance.VersionMajor)) -ge 9]:true" 
-                $UpdatesServer = $UpdateList | Where-Object Name -eq $Instance.VersionName    
-                
-                # if SQL Server is latest Version       
-                if (([double](($Instance.Build) -Replace "\.(.|..)\.", "") -ge [double](($UpdatesServer[0].Build) -replace "\.(.|..)\.", "")) -or ($UpdatesServer[0].Build -eq "") -and ($UpdatesServer[0].Build -ne "various")) {
+            if ([int]($Instance.VersionMajor) -ge 9)
+            {
+                Write-Debug "[[int]($($Instance.VersionMajor)) -ge 9]:true"
+                $UpdatesServer = $UpdateList | Where-Object Name -eq $Instance.VersionName
+
+                # if SQL Server is latest Version
+                if (([double](($Instance.Build) -Replace "\.(.|..)\.", "") -ge [double](($UpdatesServer[0].Build) -replace "\.(.|..)\.", "")) -or ($UpdatesServer[0].Build -eq "") -and ($UpdatesServer[0].Build -ne "various"))
+                {
                     Write-Debug "[([double](($($Instance.Build)) -Replace '\.(.|..)\.', '') -ge [double](($($UpdatesServer[0].Build)) -replace '\.(.|..)\.', ''))]:true"
                     $ObjUpdate = @{ } | Select-Object CumulativeUpdate, ReleaseDate, Build, SupportEnds, ServicePack
                     $ObjUpdate.CumulativeUpdate = $UpdatesServer[0].CumulativeUpdate
                     $ObjUpdate.ReleaseDate = $UpdatesServer[0].ReleaseDate
                     $ObjUpdate.Build = $UpdatesServer[0].Build
                     $ObjUpdate.SupportEnds = $UpdatesServer[0].SupportEnds
-                    $ObjUpdate.ServicePack = $UpdatesServer[0].ServicePack 
+                    $ObjUpdate.ServicePack = $UpdatesServer[0].ServicePack
 
                     $ObjServer.Updates = $ObjUpdate
-                    if (([double](($Instance.Build) -Replace "\.(.|..)\.", "") -ge [double](($UpdatesServer[0].Build) -replace "\.(.|..)\.", ""))) {
+                    if (([double](($Instance.Build) -Replace "\.(.|..)\.", "") -ge [double](($UpdatesServer[0].Build) -replace "\.(.|..)\.", "")))
+                    {
                         Write-Debug "[if (([double](($Instance.Build) -Replace '\.(.|..)\.', '') -ge [double](($($UpdatesServer[0].Build)) -replace '\.(.|..)\', '')))]:true"
                         Write-Verbose "Setting property: ToUpdate = false"
                         $ObjServer.ToUpdate = $false
                     }
-                    else {
+                    else
+                    {
                         Write-Verbose "Setting property: ToUpdate = true"
                         $ObjServer.ToUpdate = $true
                     }
                 }
-                else {
+                else
+                {
                     #Issue - HTML Report Has Duplicates the previous Servers available builds
-                    foreach ($Update in $UpdatesServer) {
-                        if ($Update.Build -ne "various") {
+                    foreach ($Update in $UpdatesServer)
+                    {
+                        if ($Update.Build -ne "various")
+                        {
                             Write-Debug "[if ($($Update.Build) -ne 'various')]:true"
-                            if ([double](($Instance.Build) -Replace "\.(.|..)\.", "") -lt [double](($Update.Build) -replace "\.(.|..)\.", "")) {
+                            if ([double](($Instance.Build) -Replace "\.(.|..)\.", "") -lt [double](($Update.Build) -replace "\.(.|..)\.", ""))
+                            {
                                 Write-Debug "[if ([double](($($Instance.Build)) -Replace '\.(.|..)\.', '') -lt [double](($($Update.Build)) -replace '\.(.|..)\.', ''))]:true"
                                 $ObjUpdate = @{ } | Select-Object CumulativeUpdate, ReleaseDate, Build, SupportEnds, ServicePack
                                 $ObjUpdate.CumulativeUpdate = $Update.CumulativeUpdate
                                 $ObjUpdate.ReleaseDate = $Update.ReleaseDate
                                 $ObjUpdate.Build = $Update.Build
                                 $ObjUpdate.SupportEnds = $Update.SupportEnds
-                                $ObjUpdate.ServicePack = $Update.ServicePack 
+                                $ObjUpdate.ServicePack = $Update.ServicePack
 
                                 # Save not installed update
                                 $ObjUpdates += $ObjUpdate
@@ -296,33 +323,34 @@ function Show-SQLServerUpdatesReport {
             }
         }
     }
-    End {
+    End
+    {
         [string]$MessageBody = $null
         # Style CSS
-        [string]$StyleCSS = "<style> 
-                            body 
+        [string]$StyleCSS = "<style>
+                            body
                             {
                                 font-family:Calibri;
                                 font-size:12pt;
                                 background: #fafafa;
                                 color: #5a5a5a;
-                            } 
+                            }
                             h1
                             {
                                 font-size: 38px;
                                 line-height: 48px;
                                 font-weight: 100;
                             }
-                            td.toupdate 
+                            td.toupdate
                             {
                                 color:#e10707;
                                 font-weight: 700;
                             }
-                            tr:nth-child(odd) td, tr:nth-child(odd) th 
+                            tr:nth-child(odd) td, tr:nth-child(odd) th
                             {
                                 background-color: #f8f8f8;
                             }
-                            td 
+                            td
                             {
                                 padding: 8px;
                                 line-height: 18px;
@@ -330,7 +358,7 @@ function Show-SQLServerUpdatesReport {
                                 vertical-align: top;
                                 border-top: 1px solid #dddddd;
                             }
-                            table td 
+                            table td
                             {
                                 padding: 8px;
                                 line-height: 18px;
@@ -339,7 +367,7 @@ function Show-SQLServerUpdatesReport {
                                 border-top: 1px solid #dddddd;
                             }
 
-                            table 
+                            table
                             {
                                 border-bottom: 5px solid rgba(225,7,7,.5);
                                 border-collapse: collapse;
@@ -349,7 +377,7 @@ function Show-SQLServerUpdatesReport {
                                 margin: 0 0 20px;
                                 width: 100%;
                             }
-                            a 
+                            a
                             {
                                 color: #e10707;
                                 text-decoration:none;
@@ -359,29 +387,29 @@ function Show-SQLServerUpdatesReport {
                                  text-decoration:underline;
                                  color:#FF0000;
                             }
-                            body 
+                            body
                             {
                                 font-family:Calibri;
                                 font-size:12pt;
                                 background: #fafafa;
                                 color: #5a5a5a;
-                            } 
+                            }
                             h1
                             {
                                 font-size: 38px;
                                 line-height: 48px;
                                 font-weight: 100;
                             }
-                            td.toupdate 
+                            td.toupdate
                             {
                                 color:#e10707;
                                 font-weight: 700;
                             }
-                            tr:nth-child(odd) td, tr:nth-child(odd) th 
+                            tr:nth-child(odd) td, tr:nth-child(odd) th
                             {
                                 background-color: #f8f8f8;
                             }
-                            td 
+                            td
                             {
                                 padding: 8px;
                                 line-height: 18px;
@@ -389,7 +417,7 @@ function Show-SQLServerUpdatesReport {
                                 vertical-align: top;
                                 border-top: 1px solid #dddddd;
                             }
-                            table td 
+                            table td
                             {
                                 padding: 8px;
                                 line-height: 18px;
@@ -398,7 +426,7 @@ function Show-SQLServerUpdatesReport {
                                 border-top: 1px solid #dddddd;
                             }
 
-                            table 
+                            table
                             {
                                 border-bottom: 5px solid rgba(225,7,7,.5);
                                 border-collapse: collapse;
@@ -408,7 +436,7 @@ function Show-SQLServerUpdatesReport {
                                 margin: 0 0 20px;
                                 width: 100%;
                             }
-                            a 
+                            a
                             {
                                 color: #e10707;
                                 text-decoration:none;
@@ -425,15 +453,18 @@ function Show-SQLServerUpdatesReport {
                         Information about updates getting with site <a href='https://sqlserverupdates.com' target='_blank'>https://sqlserverupdates.com</a>"
 
         #Header for report
-        if ($ObjAllSserversWithUpdates.Name) {
+        if ($ObjAllSserversWithUpdates.Name)
+        {
             $HeaderReport = ($ObjAllSserversWithUpdates.Name).ToUpper() -join ', '
         }
-        elseif ($BuildNumber) {
+        elseif ($BuildNumber)
+        {
             $HeaderReport = $BuildNumber
         }
 
         #Prepare HTML
-        if ($HTML -and $ObjAllSserversWithUpdates) {
+        if ($HTML -and $ObjAllSserversWithUpdates)
+        {
             Write-Verbose "Preparation of an HTML report"
             Write-Debug "[($HTML -and $ObjAllSserversWithUpdates)]:true"
             $MessageBody += "<h1>Updates Report - ($HeaderReport)</h1></br></br>"
@@ -444,18 +475,20 @@ function Show-SQLServerUpdatesReport {
                             @{L = "Release Date"; E = { (($_.Updates).ReleaseDate) -join " </br> " } }, `
                             @{L = "Support Ends"; E = { "<b>$((($_.Updates).SupportEnds)-join " </br> ")</b>" } }, `
                             @{L = "ServicePack "; E = { (($_.Updates).ServicePack) -join "</br> " } } |
-                            ConvertTo-Html -Title "Updates Report" -PostContent $PostContent).Replace("&lt;", "<")).Replace("&gt;", ">")).Replace("&quot;", """")).replace("<tr><td>True", "<tr><td class='toupdate'>True") 
-            try {
+                            ConvertTo-Html -Title "Updates Report" -PostContent $PostContent).Replace("&lt;", "<")).Replace("&gt;", ">")).Replace("&quot;", """")).replace("<tr><td>True", "<tr><td class='toupdate'>True")
+            try
+            {
                 Write-Verbose "Create file: $($PSBoundParameters.Path)"
                 $MessageBody | Out-File $PSBoundParameters.Path
             }
-            catch {
+            catch
+            {
                 Write-Warning $_.Exception.Message
             }
         }
-        else {
+        else
+        {
             return $ObjAllSserversWithUpdates
         }
     }
 }
-
