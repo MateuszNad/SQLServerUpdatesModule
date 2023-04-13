@@ -118,7 +118,7 @@ function Get-SqlServerUpdate
         {
             # enable TLS 1.2
             [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-            $html = Invoke-WebRequest -Uri $WebsiteAddress
+            $html = Invoke-WebRequest -Uri $WebsiteAddress -UseBasicParsing
             $content = $parser.ParseDocument($html);
             Write-Verbose ("{0};Invoke-WebRequest" -f $ElapsedTime.Elapsed)
         }
@@ -169,7 +169,7 @@ function Get-SqlServerUpdate
         # $SQL = 'SQL Server 2008'
         try
         {
-            $webHtml = Invoke-WebRequest -Uri $VersionSQL.$SQL.href
+            $webHtml = Invoke-WebRequest -Uri $VersionSQL.$SQL.href -UseBasicParsing
             $ListUpdates = $parser.ParseDocument($webHtml);
         }
         catch
